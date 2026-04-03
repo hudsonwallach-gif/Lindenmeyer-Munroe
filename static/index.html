@@ -3,239 +3,683 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DB Chat</title>
+  <title>Operations AI Assistant</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Reset & base ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: system-ui, sans-serif;
-      background: #f4f4f5;
+    :root {
+      --text-primary:   #2C262C;
+      --text-secondary: #6C666C;
+      --border:         #E3E6EA;
+      --bg-page:        #F7F8FA;
+      --bg-white:       #FFFFFF;
+      --bg-table-head:  #F1F3F5;
+      --bg-table-alt:   #F7F8FA;
+      --accent:         #DC8E4C;
+      --error-bg:       #FEF6F0;
+      --error-text:     #B05010;
+      --font:           'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono:           'Consolas', 'Courier New', monospace;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Layout shell ───────────────────────────────────────────────── */
+    .shell {
       display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
 
-    header {
-      background: #18181b;
-      color: #fff;
-      padding: 14px 20px;
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .header {
+      background: var(--bg-white);
+      border-bottom: 2px solid var(--accent);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .header-title {
       font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
     }
 
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .header-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ── Main content area ──────────────────────────────────────────── */
+    .content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Chat column ────────────────────────────────────────────────── */
+    .chat-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    /* ── Suggestions bar ────────────────────────────────────────────── */
+    .suggestions {
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .suggestions-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .suggestion-chip {
+      font-size: 12px;
+      color: var(--text-primary);
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.1s, background 0.1s;
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--accent);
+      background: var(--bg-white);
+    }
+
+    /* ── Chat feed ──────────────────────────────────────────────────── */
     #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
     }
 
-    .bubble {
-      max-width: 720px;
+    /* ── Bubbles ────────────────────────────────────────────────────── */
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .msg-row.user  { align-self: flex-end; align-items: flex-end; }
+    .msg-row.assistant { align-self: flex-start; align-items: flex-start; }
+
+    .msg-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      padding: 0 2px;
+    }
+
+    .bubble-user {
+      background: var(--text-primary);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 2px 8px 8px 8px;
+      font-size: 14px;
+      max-width: 600px;
+    }
+
+    .bubble-assistant {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: 8px 2px 8px 8px;
+      padding: 16px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── SQL toggle ─────────────────────────────────────────────────── */
+    .sql-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
       width: fit-content;
     }
 
-    .bubble.user {
-      align-self: flex-end;
-      background: #18181b;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 12px 12px 2px 12px;
-      font-size: 14px;
+    .sql-toggle-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .bubble.assistant {
-      align-self: flex-start;
+    .sql-toggle-arrow {
+      font-size: 10px;
+      color: var(--text-secondary);
+      transition: transform 0.15s;
+    }
+
+    .sql-toggle-arrow.open { transform: rotate(90deg); }
+
+    .sql-block {
+      display: none;
+      background: #F3F4F6;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 12px 14px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+    }
+
+    .sql-block.visible { display: block; }
+
+    /* ── Actions row ────────────────────────────────────────────────── */
+    .response-actions {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 8px;
     }
 
-    .sql-block {
-      background: #1e1e2e;
-      color: #cdd6f4;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 13px;
-      white-space: pre-wrap;
-      word-break: break-word;
+    .action-btn {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      transition: border-color 0.1s, color 0.1s;
+    }
+
+    .action-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+    .action-btn.copied { color: #2D7A4F; border-color: #2D7A4F; }
+
+    /* ── Result table ───────────────────────────────────────────────── */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
     }
 
     .result-table {
       border-collapse: collapse;
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      font-size: 13px;
       width: 100%;
+      font-size: 13px;
     }
 
     .result-table th {
-      background: #f4f4f5;
-      padding: 8px 12px;
+      background: var(--bg-table-head);
+      padding: 8px 14px;
       text-align: left;
-      font-weight: 600;
-      color: #52525b;
-      border-bottom: 1px solid #e4e4e7;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
     }
+
+    .result-table th:last-child { border-right: none; }
 
     .result-table td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #f4f4f5;
-      color: #18181b;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--text-primary);
+      white-space: nowrap;
     }
 
-    .result-table tr:last-child td { border-bottom: none; }
+    .result-table td:last-child { border-right: none; }
+
+    .result-table tbody tr:nth-child(even) td { background: var(--bg-table-alt); }
+    .result-table tbody tr:hover td { background: #EEF0F4; }
+    .result-table tbody tr:last-child td { border-bottom: none; }
+
+    .null-val { color: var(--text-secondary); font-style: italic; }
+
+    .row-count {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Status messages ────────────────────────────────────────────── */
+    .loading-msg {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .loading-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 1; }
+    }
 
     .empty-result {
-      color: #71717a;
       font-size: 13px;
+      color: var(--text-secondary);
       font-style: italic;
     }
 
     .error-msg {
-      background: #fef2f2;
-      color: #dc2626;
+      background: var(--error-bg);
+      color: var(--error-text);
+      border: 1px solid #F5C6A0;
+      border-left: 3px solid var(--accent);
       padding: 10px 14px;
-      border-radius: 8px;
       font-size: 13px;
     }
 
-    .row-count {
-      font-size: 12px;
-      color: #71717a;
+    /* ── Right panel ────────────────────────────────────────────────── */
+    .right-panel {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--bg-white);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
-    #input-bar {
-      background: #fff;
-      border-top: 1px solid #e4e4e7;
-      padding: 14px 20px;
+    .panel-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-placeholder {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .panel-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .panel-stat-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .panel-stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .panel-stat-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Input bar ──────────────────────────────────────────────────── */
+    .input-bar {
+      background: var(--bg-white);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
       display: flex;
       gap: 10px;
+      flex-shrink: 0;
     }
 
     #question {
       flex: 1;
-      padding: 10px 14px;
-      border: 1px solid #e4e4e7;
-      border-radius: 8px;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
       font-size: 14px;
+      font-family: var(--font);
+      color: var(--text-primary);
+      background: var(--bg-white);
       outline: none;
       transition: border-color 0.15s;
     }
 
-    #question:focus { border-color: #18181b; }
+    #question::placeholder { color: #A8A4A8; }
+    #question:focus { border-color: var(--text-primary); }
 
     #send {
-      padding: 10px 20px;
-      background: #18181b;
+      padding: 9px 22px;
+      background: var(--text-primary);
       color: #fff;
       border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 2px;
+      font-size: 13px;
+      font-family: var(--font);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       cursor: pointer;
       transition: opacity 0.15s;
+      white-space: nowrap;
     }
 
-    #send:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .loading {
-      color: #71717a;
-      font-size: 13px;
-      font-style: italic;
-    }
+    #send:hover:not(:disabled) { opacity: 0.85; }
+    #send:disabled { opacity: 0.35; cursor: not-allowed; }
   </style>
 </head>
 <body>
-  <header>DB Chat</header>
-  <div id="chat"></div>
-  <div id="input-bar">
-    <input id="question" type="text" placeholder="Ask a question about your data..." autocomplete="off" />
-    <button id="send">Send</button>
+<div class="shell">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-title">Operations AI Assistant</div>
+      <div class="header-subtitle">Inventory and data query assistant</div>
+    </div>
+    <div class="header-badge">Internal Use Only</div>
+  </header>
+
+  <div class="content">
+
+    <!-- Chat column -->
+    <div class="chat-column">
+
+      <!-- Suggested queries -->
+      <div class="suggestions">
+        <span class="suggestions-label">Quick queries</span>
+        <button class="suggestion-chip" onclick="suggest(this)">Check inventory levels</button>
+        <button class="suggestion-chip" onclick="suggest(this)">Find product availability</button>
+        <button class="suggestion-chip" onclick="suggest(this)">Show recent orders</button>
+        <button class="suggestion-chip" onclick="suggest(this)">Warehouse stock levels</button>
+      </div>
+
+      <!-- Chat feed -->
+      <div id="chat"></div>
+
+      <!-- Input bar -->
+      <div class="input-bar">
+        <input id="question" type="text" placeholder="Enter a query about inventory, orders, or operations..." autocomplete="off" />
+        <button id="send">Submit</button>
+      </div>
+
+    </div>
+
+    <!-- Right panel -->
+    <aside class="right-panel">
+      <div>
+        <div class="panel-section-title">Session</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;">
+          <div class="panel-stat">
+            <div class="panel-stat-label">Queries run</div>
+            <div class="panel-stat-value" id="stat-queries">0</div>
+          </div>
+          <div class="panel-stat">
+            <div class="panel-stat-label">Rows returned</div>
+            <div class="panel-stat-value" id="stat-rows">0</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-section-title">Analytics</div>
+        <div class="panel-placeholder">
+          Charts and trend data will appear here in a future release.
+        </div>
+      </div>
+      <div>
+        <div class="panel-section-title">Notes</div>
+        <div class="panel-placeholder">
+          Query history and saved reports coming soon.
+        </div>
+      </div>
+    </aside>
+
   </div>
+</div>
 
-  <script>
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('question');
-    const sendBtn = document.getElementById('send');
+<script>
+  const chat    = document.getElementById('chat');
+  const input   = document.getElementById('question');
+  const sendBtn = document.getElementById('send');
+  const statQueries = document.getElementById('stat-queries');
+  const statRows    = document.getElementById('stat-rows');
 
-    let history = [];
+  let history      = [];
+  let totalQueries = 0;
+  let totalRows    = 0;
 
-    function appendBubble(role, content) {
-      const el = document.createElement('div');
-      el.className = `bubble ${role}`;
-      el.innerHTML = content;
-      chat.appendChild(el);
-      chat.scrollTop = chat.scrollHeight;
-      return el;
+  /* ── Helpers ─────────────────────────────────────────────────────── */
+
+  function suggest(btn) {
+    input.value = btn.textContent.trim();
+    input.focus();
+  }
+
+  function scrollBottom() {
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── Render result table ─────────────────────────────────────────── */
+  function renderTable(rows) {
+    if (!rows || rows.length === 0) {
+      return '<span class="empty-result">No records returned.</span>';
     }
-
-    function renderResult(rows) {
-      if (!rows || rows.length === 0) {
-        return '<span class="empty-result">No rows returned.</span>';
+    const cols = rows[0].length;
+    let html = '<div class="table-wrapper"><table class="result-table"><thead><tr>';
+    for (let i = 0; i < cols; i++) html += `<th>Column ${i + 1}</th>`;
+    html += '</tr></thead><tbody>';
+    for (const row of rows) {
+      html += '<tr>';
+      for (const cell of row) {
+        html += cell === null
+          ? '<td><span class="null-val">—</span></td>'
+          : `<td>${escHtml(cell)}</td>`;
       }
-      const cols = rows[0].length;
-      let html = '<table class="result-table"><thead><tr>';
-      for (let i = 0; i < cols; i++) html += `<th>col${i + 1}</th>`;
-      html += '</tr></thead><tbody>';
-      for (const row of rows) {
-        html += '<tr>';
-        for (const cell of row) html += `<td>${cell === null ? '<em>null</em>' : cell}</td>`;
-        html += '</tr>';
-      }
-      html += `</tbody></table><span class="row-count">${rows.length} row${rows.length !== 1 ? 's' : ''}</span>`;
-      return html;
+      html += '</tr>';
     }
+    html += '</tbody></table></div>';
+    html += `<div class="row-count">${rows.length} record${rows.length !== 1 ? 's' : ''} returned</div>`;
+    return html;
+  }
 
-    async function sendQuestion() {
-      const question = input.value.trim();
-      if (!question) return;
+  /* ── Append a user message ───────────────────────────────────────── */
+  function appendUser(text) {
+    const row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = `
+      <div class="msg-label">You</div>
+      <div class="bubble-user">${escHtml(text)}</div>
+    `;
+    chat.appendChild(row);
+    scrollBottom();
+    return row;
+  }
 
-      input.value = '';
-      sendBtn.disabled = true;
+  /* ── Append an assistant shell (returns the inner bubble div) ────── */
+  function appendAssistantShell() {
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    row.innerHTML = `
+      <div class="msg-label">Operations AI</div>
+      <div class="bubble-assistant" id="bubble-pending"></div>
+    `;
+    chat.appendChild(row);
+    scrollBottom();
+    return document.getElementById('bubble-pending');
+  }
 
-      appendBubble('user', question);
-      const loadingEl = appendBubble('assistant', '<span class="loading">Thinking…</span>');
+  /* ── Populate assistant bubble with a full response ─────────────── */
+  function fillAssistantBubble(bubble, sqlQuery, rows) {
+    const sqlId   = `sql-${Date.now()}`;
+    const arrowId = `arrow-${Date.now()}`;
+    const copyId  = `copy-${Date.now()}`;
 
-      try {
-        const res = await fetch('/ask', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, history }),
-        });
+    bubble.innerHTML = `
+      <div class="response-actions">
+        <span class="sql-toggle" onclick="toggleSql('${sqlId}','${arrowId}')">
+          <span class="sql-toggle-arrow" id="${arrowId}">&#9658;</span>
+          <span class="sql-toggle-label">View SQL</span>
+        </span>
+        <button class="action-btn" id="${copyId}" onclick="copyResult('${copyId}', ${JSON.stringify(JSON.stringify(rows))})">Copy</button>
+      </div>
+      <pre class="sql-block" id="${sqlId}">${escHtml(sqlQuery)}</pre>
+      ${renderTable(rows)}
+    `;
+    scrollBottom();
+  }
 
-        const data = await res.json();
+  /* ── SQL toggle ──────────────────────────────────────────────────── */
+  function toggleSql(sqlId, arrowId) {
+    const block = document.getElementById(sqlId);
+    const arrow = document.getElementById(arrowId);
+    block.classList.toggle('visible');
+    arrow.classList.toggle('open');
+  }
 
-        if (!res.ok) {
-          const err = data.detail?.error || data.detail || 'Unknown error';
-          loadingEl.innerHTML = `<span class="error-msg">${err}</span>`;
-          // Still update history if the server returned it
-          if (data.detail?.history) history = data.detail.history;
-        } else {
-          history = data.history;
-          loadingEl.innerHTML = `
-            <div class="sql-block">${data.query}</div>
-            ${renderResult(data.result)}
-          `;
-        }
-      } catch (e) {
-        loadingEl.innerHTML = `<span class="error-msg">Network error: ${e.message}</span>`;
-      }
-
-      sendBtn.disabled = false;
-      input.focus();
-    }
-
-    sendBtn.addEventListener('click', sendQuestion);
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') sendQuestion();
+  /* ── Copy button ─────────────────────────────────────────────────── */
+  function copyResult(btnId, jsonRows) {
+    const rows = JSON.parse(jsonRows);
+    const text = rows.map(r => r.join('\t')).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
     });
-  </script>
+  }
+
+  /* ── Main send handler ───────────────────────────────────────────── */
+  async function sendQuestion() {
+    const question = input.value.trim();
+    if (!question) return;
+
+    input.value = '';
+    sendBtn.disabled = true;
+
+    appendUser(question);
+    const bubble = appendAssistantShell();
+    bubble.innerHTML = `
+      <div class="loading-msg">
+        <div class="loading-dot"></div>
+        Analyzing database...
+      </div>
+    `;
+
+    try {
+      const res  = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, history }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        const err = data.detail?.error || data.detail || 'An error occurred.';
+        bubble.innerHTML = `<div class="error-msg">${escHtml(String(err))}</div>`;
+        if (data.detail?.history) history = data.detail.history;
+      } else {
+        history = data.history;
+        fillAssistantBubble(bubble, data.query, data.result);
+
+        totalQueries++;
+        totalRows += (data.result || []).length;
+        statQueries.textContent = totalQueries;
+        statRows.textContent    = totalRows;
+      }
+    } catch (e) {
+      bubble.innerHTML = `<div class="error-msg">Network error: ${escHtml(e.message)}</div>`;
+    }
+
+    sendBtn.disabled = false;
+    input.focus();
+    scrollBottom();
+  }
+
+  sendBtn.addEventListener('click', sendQuestion);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendQuestion();
+  });
+</script>
 </body>
 </html>
