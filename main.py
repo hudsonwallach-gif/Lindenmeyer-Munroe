@@ -12,7 +12,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 app = FastAPI(title="Lindenmeyr AI Assistant")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+client = Anthropic()
 
 
 @app.get("/")
@@ -20,7 +20,7 @@ def root():
     return RedirectResponse(url="/static/index.html")
 
 
-client = Anthropic()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 DATABASE_URL = os.environ["DATABASE_URL"]
 MODEL = "claude-sonnet-4-6"
 
