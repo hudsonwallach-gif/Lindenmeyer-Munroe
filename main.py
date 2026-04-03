@@ -1,6 +1,5 @@
 import os
 import re
-from typing import Optional
 
 import psycopg2
 from anthropic import Anthropic
@@ -12,16 +11,17 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-app = FastAPI(title="Natural Language to SQL API")
+app = FastAPI(title="Lindenmeyr AI Assistant")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/")
 def root():
     return RedirectResponse(url="/static/index.html")
-client = Anthropic()  # reads ANTHROPIC_API_KEY from env automatically
 
-DATABASE_URL = os.environ["DATABASE_URL"]  # fail fast at startup if missing
+
+client = Anthropic()
+DATABASE_URL = os.environ["DATABASE_URL"]
 MODEL = "claude-sonnet-4-6"
 
 _DISALLOWED_PATTERN = re.compile(
@@ -46,8 +46,8 @@ class AskRequest(BaseModel):
 
 
 class AskResponse(BaseModel):
-    query: str
-    result: list
+    answer: str
+    sql: str
     history: list[MessageEntry]
 
 
@@ -61,14 +61,8 @@ def get_connection():
 
 
 def get_schema() -> str:
-    """Introspect all user tables and their columns from the public schema."""
     query = """
-        SELECT
-            table_name,
-            column_name,
-            data_type,
-            is_nullable,
-            column_default
+        SELECT table_name, column_name, data_type, is_nullable, column_default
         FROM information_schema.columns
         WHERE table_schema = 'public'
           AND table_name NOT LIKE 'pg_%'
@@ -101,15 +95,22 @@ def get_schema() -> str:
     return "\n".join(schema_lines)
 
 
-def run_select_query(sql: str) -> list:
-    """Execute a validated SELECT query and return rows as a list of lists."""
+def get_column_names(sql: str) -> list[str]:
     conn = get_connection()
     try:
         cur = conn.cursor()
         cur.execute(sql)
-        result = cur.fetchall()
-        cur.close()
-        return [list(row) for row in result]
+        return [desc[0] for desc in cur.description]
+    finally:
+        conn.close()
+
+
+def run_select_query(sql: str) -> list:
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(sql)
+        return [list(row) for row in cur.fetchall()]
     finally:
         conn.close()
 
@@ -120,31 +121,58 @@ def run_select_query(sql: str) -> list:
 
 
 def validate_select_only(sql: str) -> None:
-    """Raise ValueError if the SQL is not a SELECT/WITH statement."""
     stripped = sql.strip().lstrip(";").upper()
     if not (stripped.startswith("SELECT") or stripped.startswith("WITH")):
         raise ValueError(f"Only SELECT queries are allowed. Got: {sql[:80]!r}")
     if _DISALLOWED_PATTERN.search(sql):
-        raise ValueError("Query contains disallowed SQL keywords (INSERT/UPDATE/DELETE/etc.)")
+        raise ValueError("Query contains disallowed SQL keywords.")
 
 
 # ---------------------------------------------------------------------------
-# Prompt
+# Prompts
 # ---------------------------------------------------------------------------
 
 
-def build_system_prompt(schema: str) -> str:
-    return f"""You are a PostgreSQL query assistant. You convert natural language questions into SQL SELECT queries.
+def build_sql_prompt(schema: str) -> str:
+    return f"""You are a PostgreSQL query assistant. Convert natural language questions into SQL SELECT queries.
 
 Database schema:
 {schema}
 
 Rules:
 1. Return ONLY valid PostgreSQL SQL — no explanation, no markdown, no code fences.
-2. Only write SELECT queries (or WITH ... SELECT for CTEs). Never write INSERT, UPDATE, DELETE, DROP, or any data-modifying statement.
+2. Only write SELECT queries (or WITH ... SELECT for CTEs).
 3. Use the exact table and column names from the schema above.
-4. If the question cannot be answered with a SELECT query against the given schema, respond with exactly: CANNOT_ANSWER
-5. If you need clarification before writing a query, respond with: CLARIFY: <your question>
+4. If the question cannot be answered from the schema, respond with exactly: CANNOT_ANSWER
+5. If you need clarification, respond with: CLARIFY: <your question>
+"""
+
+
+def build_answer_prompt(question: str, columns: list[str], rows: list) -> str:
+    if not rows:
+        data_text = "The query returned no results."
+    else:
+        header = " | ".join(columns)
+        lines = [header, "-" * len(header)]
+        for row in rows[:50]:
+            lines.append(" | ".join(str(v) if v is not None else "—" for v in row))
+        data_text = "\n".join(lines)
+        if len(rows) > 50:
+            data_text += f"\n... and {len(rows) - 50} more rows."
+
+    return f"""You are a helpful internal assistant for a paper and packaging distribution company.
+
+A user asked: "{question}"
+
+You ran a database query and got these results:
+{data_text}
+
+Now answer the user's question in clear, friendly, conversational English.
+- Be concise and specific — mention actual names, numbers, and figures from the data
+- If there are no results, say so naturally
+- Do not mention SQL, databases, or technical details
+- Sound like a knowledgeable colleague, not a robot
+- Use bullet points or short lists when showing multiple items
 """
 
 
@@ -160,65 +188,67 @@ def health():
 
 @app.post("/ask", response_model=AskResponse)
 def ask(body: AskRequest):
-    # 1. Introspect schema
+    # 1. Get schema
     try:
         schema = get_schema()
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Cannot connect to database: {e}")
 
-    system_prompt = build_system_prompt(schema)
-
-    # 2. Build messages: history + new question
+    # 2. Build messages for SQL generation
     messages = [{"role": entry.role, "content": entry.content} for entry in body.history]
     messages.append({"role": "user", "content": body.question})
 
-    # 3. Call Claude
+    # 3. Ask Claude for SQL
     try:
-        response = client.messages.create(
+        sql_response = client.messages.create(
             model=MODEL,
             max_tokens=1024,
-            system=system_prompt,
+            system=build_sql_prompt(schema),
             messages=messages,
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Claude API error: {e}")
 
-    sql_query = response.content[0].text.strip()
+    sql_query = sql_response.content[0].text.strip()
+    # Strip accidental markdown code fences
+    sql_query = re.sub(r"^```(?:sql)?\s*", "", sql_query, flags=re.IGNORECASE)
+    sql_query = re.sub(r"\s*```$", "", sql_query).strip()
 
-    # 4. Build updated history
-    updated_history = list(body.history) + [
-        MessageEntry(role="user", content=body.question),
-        MessageEntry(role="assistant", content=sql_query),
-    ]
-
-    # 5. Handle Claude sentinel responses
+    # 4. Handle sentinels
     if sql_query == "CANNOT_ANSWER":
-        raise HTTPException(
-            status_code=422,
-            detail={"error": "Cannot answer this question with the available schema", "history": [h.model_dump() for h in updated_history]},
-        )
+        raise HTTPException(status_code=422, detail={"error": "I don't have the data needed to answer that question."})
     if sql_query.startswith("CLARIFY:"):
-        raise HTTPException(
-            status_code=422,
-            detail={"error": sql_query, "history": [h.model_dump() for h in updated_history]},
-        )
+        raise HTTPException(status_code=422, detail={"error": sql_query[8:].strip()})
 
-    # 6. Validate SELECT-only
+    # 5. Validate SELECT-only
     try:
         validate_select_only(sql_query)
     except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": str(e), "query": sql_query, "history": [h.model_dump() for h in updated_history]},
-        )
+        raise HTTPException(status_code=400, detail={"error": str(e)})
 
-    # 7. Execute
+    # 6. Run query
     try:
-        result = run_select_query(sql_query)
+        columns = get_column_names(sql_query)
+        rows = run_select_query(sql_query)
     except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": str(e), "query": sql_query, "history": [h.model_dump() for h in updated_history]},
-        )
+        raise HTTPException(status_code=400, detail={"error": str(e)})
 
-    return AskResponse(query=sql_query, result=result, history=updated_history)
+    # 7. Ask Claude to answer in plain English
+    try:
+        answer_response = client.messages.create(
+            model=MODEL,
+            max_tokens=1024,
+            messages=[{"role": "user", "content": build_answer_prompt(body.question, columns, rows)}],
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Claude API error: {e}")
+
+    answer = answer_response.content[0].text.strip()
+
+    # 8. Update history with natural language answer (not raw SQL)
+    updated_history = list(body.history) + [
+        MessageEntry(role="user", content=body.question),
+        MessageEntry(role="assistant", content=answer),
+    ]
+
+    return AskResponse(answer=answer, sql=sql_query, history=updated_history)
