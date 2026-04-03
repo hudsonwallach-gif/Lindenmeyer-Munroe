@@ -6,11 +6,19 @@ import psycopg2
 from anthropic import Anthropic
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 load_dotenv()
 
 app = FastAPI(title="Natural Language to SQL API")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.get("/")
+def root():
+    return RedirectResponse(url="/static/index.html")
 client = Anthropic()  # reads ANTHROPIC_API_KEY from env automatically
 
 DATABASE_URL = os.environ["DATABASE_URL"]  # fail fast at startup if missing
