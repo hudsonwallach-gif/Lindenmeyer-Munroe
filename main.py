@@ -5,7 +5,7 @@ import psycopg2
 from anthropic import Anthropic
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -17,7 +17,7 @@ client = Anthropic()
 
 @app.get("/")
 def root():
-    return RedirectResponse(url="/static/index.html")
+    return FileResponse("static/index.html")
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
