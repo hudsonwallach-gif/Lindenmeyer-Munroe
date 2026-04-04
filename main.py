@@ -2,6 +2,7 @@ import os
 import re
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import psycopg2
 import psycopg2.pool
@@ -14,7 +15,12 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-DATABASE_URL = os.environ["DATABASE_URL"]  # fail fast at startup if missing
+BASE_DIR = Path(__file__).parent.resolve()
+STATIC_DIR = BASE_DIR / "static"
+
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is not set. Add it to your .env file.")
 MODEL = "claude-opus-4-6"
 
 _DISALLOWED_PATTERN = re.compile(
@@ -34,7 +40,7 @@ _SCHEMA_TTL = 60.0  # seconds
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _pool
-    _pool = psycopg2.pool.ThreadedConnectionPool(1, 10, DATABASE_URL)
+    _pool = psycopg2.pool.ThreadedConnectionPool(minconn=1, maxconn=10, dsn=DATABASE_URL)
     yield
     _pool.closeall()
 
@@ -317,8 +323,9 @@ def ask(body: AskRequest):
 
 @app.get("/")
 def serve_frontend():
-    return FileResponse("static/index.html")
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 # Static files mounted last so API routes take priority
-app.mount("/static", StaticFiles(directory="static"), name="static")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
