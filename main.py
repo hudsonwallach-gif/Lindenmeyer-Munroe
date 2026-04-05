@@ -4,21 +4,21 @@ from pathlib import Path
 from typing import Optional
 
 import psycopg2
-from anthropic import Anthropic
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from groq import Groq
 from pydantic import BaseModel
 
 load_dotenv()
 
 app = FastAPI(title="Natural Language to SQL API")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-client = Anthropic()  # reads ANTHROPIC_API_KEY from env automatically
+client = Groq()  # reads GROQ_API_KEY from env automatically
 
 DATABASE_URL = os.environ["DATABASE_URL"]  # fail fast at startup if missing
-MODEL = "claude-sonnet-4-6"
+MODEL = "llama-3.3-70b-versatile"
 
 _DISALLOWED_PATTERN = re.compile(
     r"\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|ALTER|CREATE|REPLACE|UPSERT|MERGE|GRANT|REVOKE|EXECUTE|CALL|COPY|VACUUM|ANALYZE)\b",
@@ -181,18 +181,17 @@ def ask(body: AskRequest):
     messages = [{"role": entry.role, "content": entry.content} for entry in body.history]
     messages.append({"role": "user", "content": body.question})
 
-    # 3. Call Claude
+    # 3. Call Groq
     try:
-        response = client.messages.create(
+        response = client.chat.completions.create(
             model=MODEL,
             max_tokens=1024,
-            system=system_prompt,
-            messages=messages,
+            messages=[{"role": "system", "content": system_prompt}] + messages,
         )
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Claude API error: {e}")
+        raise HTTPException(status_code=502, detail=f"Groq API error: {e}")
 
-    sql_query = response.content[0].text.strip()
+    sql_query = response.choices[0].message.content.strip()
 
     # 4. Build updated history
     updated_history = list(body.history) + [
@@ -200,7 +199,7 @@ def ask(body: AskRequest):
         MessageEntry(role="assistant", content=sql_query),
     ]
 
-    # 5. Handle Claude sentinel responses
+    # 5. Handle sentinel responses
     if sql_query == "CANNOT_ANSWER":
         raise HTTPException(
             status_code=422,
