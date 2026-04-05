@@ -40,9 +40,15 @@ _SCHEMA_TTL = 60.0  # seconds
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _pool
-    _pool = psycopg2.pool.ThreadedConnectionPool(minconn=1, maxconn=10, dsn=DATABASE_URL)
+    try:
+        _pool = psycopg2.pool.ThreadedConnectionPool(minconn=1, maxconn=10, dsn=DATABASE_URL)
+        print("Database connection pool created.")
+    except Exception as e:
+        print(f"WARNING: Could not create connection pool at startup: {e}")
+        print("The app will still start — connections will be attempted per-request.")
     yield
-    _pool.closeall()
+    if _pool:
+        _pool.closeall()
 
 
 app = FastAPI(title="Lindenmeyer Munroe AI Agent", lifespan=lifespan)
