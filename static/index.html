@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LM DataQuery</title>
+  <title>LM Intelligent Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -11,24 +11,25 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:           #1C3F6B;
-      --navy-hover:     #16335a;
-      --terra:          #B85C28;
-      --terra-hover:    #9a4d22;
-      --white:          #FFFFFF;
-      --bg:             #F5F6F8;
-      --border:         #E0E4EA;
-      --text:           #1C3F6B;
-      --text-secondary: #6B7280;
-      --text-faint:     #9CA3AF;
-      --sidebar-w:      260px;
+      --navy:        #1C4068;
+      --navy-hover:  #163354;
+      --terra:       #C4622D;
+      --terra-hover: #a85226;
+      --warm-white:  #FAF8F5;
+      --surface:     #F0EDE8;
+      --border:      #D9D4CE;
+      --text:        #162E4A;
+      --text-muted:  #7A7570;
+      --text-faint:  #9CA3AF;
+      --white:       #FFFFFF;
+      --sidebar-w:   260px;
     }
 
     html, body { height: 100%; overflow: hidden; }
 
     body {
-      font-family: "Inter", system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+      font-family: "Inter", system-ui, Arial, sans-serif;
+      background: var(--surface);
       color: var(--text);
       display: flex;
       font-size: 14px;
@@ -56,10 +57,9 @@
       align-items: center;
       gap: 10px;
       text-decoration: none;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
-    /* White circle monogram */
     #brand-monogram {
       width: 38px;
       height: 38px;
@@ -89,19 +89,17 @@
       letter-spacing: 0.6px;
     }
 
-    /* Terracotta tree divider */
-    #sidebar-tree {
+    /* Terracotta tree mark + rule */
+    #sidebar-divider {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 0 0 14px;
-      opacity: 0.75;
+      margin-bottom: 14px;
     }
-    #sidebar-tree svg { flex-shrink: 0; }
-    #sidebar-tree-line {
+    #sidebar-divider .rule {
       flex: 1;
       height: 1px;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.1);
     }
 
     #new-chat-btn {
@@ -159,7 +157,12 @@
       gap: 7px;
     }
     .history-item:hover  { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
-    .history-item.active { background: rgba(184,92,40,0.25); color: var(--white); border-left: 2px solid var(--terra); padding-left: 8px; }
+    .history-item.active {
+      background: rgba(196,98,45,0.2);
+      color: var(--white);
+      border-left: 2px solid var(--terra);
+      padding-left: 8px;
+    }
     .history-item .h-icon { flex-shrink: 0; opacity: 0.5; }
 
     #sidebar-footer {
@@ -180,7 +183,7 @@
       flex-direction: column;
       min-width: 0;
       height: 100vh;
-      background: var(--bg);
+      background: var(--warm-white);
     }
 
     /* TOP NAV */
@@ -202,8 +205,8 @@
     }
 
     #model-badge {
-      background: var(--bg);
-      color: var(--text-secondary);
+      background: var(--surface);
+      color: var(--text-muted);
       font-size: 11.5px;
       font-weight: 500;
       padding: 4px 12px;
@@ -217,7 +220,7 @@
       flex: 1;
       overflow-y: auto;
       padding: 24px 0 8px;
-      background: var(--bg);
+      background: var(--warm-white);
     }
     #messages::-webkit-scrollbar { width: 5px; }
     #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
@@ -279,12 +282,12 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.7px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       margin-bottom: 6px;
     }
 
     .sql-block {
-      background: #F0F3F8;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-left: 3px solid var(--terra);
       border-radius: 10px;
@@ -304,7 +307,7 @@
       right: 8px;
       background: var(--white);
       border: 1px solid var(--border);
-      color: var(--text-secondary);
+      color: var(--text-muted);
       border-radius: 6px;
       padding: 2px 8px;
       font-size: 10px;
@@ -320,7 +323,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.7px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       margin-bottom: 6px;
     }
 
@@ -351,7 +354,7 @@
       background: var(--white);
     }
     .result-table tbody tr:last-child td { border-bottom: none; }
-    .result-table tbody tr:hover td { background: #EFF3F8; }
+    .result-table tbody tr:hover td { background: var(--surface); }
 
     .row-count {
       font-size: 11.5px;
@@ -361,7 +364,7 @@
 
     .no-results {
       font-size: 13px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       font-style: italic;
     }
 
@@ -369,6 +372,7 @@
     .error-card {
       background: #FEF3EE;
       border: 1px solid #F0C4A8;
+      border-left: 3px solid var(--terra);
       border-radius: 10px;
       padding: 12px 14px;
       font-size: 13.5px;
@@ -409,7 +413,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--text-secondary);
+      background: var(--text-muted);
       opacity: 0.4;
       animation: pulse 1.2s infinite;
     }
@@ -447,7 +451,7 @@
       color: var(--white);
       margin-bottom: 20px;
       letter-spacing: -0.5px;
-      box-shadow: 0 4px 14px rgba(28,63,107,0.22);
+      box-shadow: 0 4px 14px rgba(28,64,104,0.2);
     }
 
     #welcome h2 {
@@ -459,8 +463,8 @@
 
     #welcome p {
       font-size: 14.5px;
-      color: var(--text-secondary);
-      max-width: 380px;
+      color: var(--text-muted);
+      max-width: 400px;
       line-height: 1.65;
       margin-bottom: 32px;
     }
@@ -469,7 +473,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
     }
 
@@ -481,14 +485,14 @@
       cursor: pointer;
       text-align: left;
       font-size: 13px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
       line-height: 1.45;
       font-family: inherit;
     }
     .suggestion-card:hover {
       border-color: var(--terra);
-      box-shadow: 0 2px 8px rgba(184,92,40,0.1);
+      box-shadow: 0 2px 8px rgba(196,98,45,0.1);
       color: var(--terra);
     }
     .suggestion-card .s-emoji {
@@ -513,7 +517,7 @@
       display: flex;
       align-items: flex-end;
       gap: 10px;
-      background: var(--bg);
+      background: var(--surface);
       border: 1.5px solid var(--border);
       border-radius: 9999px;
       padding: 8px 8px 8px 18px;
@@ -521,7 +525,7 @@
     }
     #input-wrap:focus-within {
       border-color: var(--navy);
-      box-shadow: 0 0 0 3px rgba(28,63,107,0.07);
+      box-shadow: 0 0 0 3px rgba(28,64,104,0.07);
     }
 
     #user-input {
@@ -575,17 +579,17 @@
         <div id="brand-monogram">LM</div>
         <div id="brand-text">
           <div class="b-name">Lindenmeyr Munroe</div>
-          <div class="b-sub">DataQuery AI</div>
+          <div class="b-sub">Intelligent Agent</div>
         </div>
       </a>
 
       <!-- Terracotta tree mark + divider -->
-      <div id="sidebar-tree">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L7 9h3l-3 5h4l-3 6h8l-3-6h4l-3-5h3L12 2z" fill="#B85C28"/>
-          <rect x="11" y="22" width="2" height="2" rx="1" fill="#B85C28"/>
+      <div id="sidebar-divider">
+        <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg" title="Lindenmeyr Munroe">
+          <path d="M8 0L4.5 6H6.5L3 11H6L2.5 17H13.5L10 11H13L9.5 6H11.5L8 0Z" fill="#C4622D"/>
+          <rect x="7" y="17" width="2" height="3" rx="1" fill="#C4622D"/>
         </svg>
-        <div id="sidebar-tree-line"></div>
+        <div class="rule"></div>
       </div>
 
       <button id="new-chat-btn" onclick="newChat()">
@@ -609,7 +613,7 @@
   <!-- ── MAIN ── -->
   <main id="main">
     <nav id="topbar">
-      <span id="topbar-title">DataQuery Assistant</span>
+      <span id="topbar-title">LM Intelligent Agent</span>
       <span id="model-badge">claude-sonnet-4-6</span>
     </nav>
 
@@ -617,16 +621,16 @@
       <div id="welcome">
         <div id="welcome-logo">LM</div>
         <h2>Ask your database anything</h2>
-        <p>Type a plain-English question and I'll write the SQL, run it, and show you the results — instantly.</p>
+        <p>Query orders, inventory, customers, and shipments using plain English. The LM Intelligent Agent writes the SQL and returns live results instantly.</p>
         <div class="suggestion-grid">
           <button class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-emoji">📊</span>Show me the top 10 customers by revenue this year
+            <span class="s-emoji">📦</span>Show open orders pending shipment this week
           </button>
           <button class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-emoji">📦</span>What are the most ordered products last month?
+            <span class="s-emoji">📋</span>What are current stock levels for wide-format products?
           </button>
           <button class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-emoji">📈</span>How many orders were placed each month this year?
+            <span class="s-emoji">📊</span>Top 10 customers by revenue this quarter
           </button>
           <button class="suggestion-card" onclick="useSuggestion(this)">
             <span class="s-emoji">🔍</span>What tables are available in the database?
@@ -644,7 +648,7 @@
 
     <div id="input-area">
       <div id="input-wrap">
-        <textarea id="user-input" rows="1" placeholder="Ask a question about your data…"></textarea>
+        <textarea id="user-input" rows="1" placeholder="Ask about orders, inventory, customers, or shipments…"></textarea>
         <button id="send-btn" onclick="sendMessage()" title="Send">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
             <path d="M2 7.5h11M13 7.5L8.5 3M13 7.5L8.5 12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
