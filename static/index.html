@@ -4,46 +4,54 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LM DataQuery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:       #003366;
-      --navy-dark:  #002244;
-      --navy-mid:   #004080;
-      --navy-light: #e8f0f8;
-      --red:        #CC0000;
-      --red-hover:  #aa0000;
-      --gray:       #333333;
-      --gray-light: #f5f6f8;
-      --gray-mid:   #e0e4ea;
-      --white:      #ffffff;
-      --sidebar-w:  270px;
-      --radius:     12px;
+      --red:         #C41230;
+      --red-hover:   #a50f28;
+      --navy:        #1A2A4A;
+      --navy-hover:  #243860;
+      --bg:          #F5F5F7;
+      --white:       #FFFFFF;
+      --border:      #E0E0E0;
+      --text:        #1A1A1A;
+      --text-muted:  #6B7280;
+      --text-faint:  #9CA3AF;
+      --sidebar-w:   260px;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--gray-light);
-      color: var(--gray);
-      height: 100vh;
-      display: flex;
+    html, body {
+      height: 100%;
       overflow: hidden;
     }
 
-    /* ── SIDEBAR ── */
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ─────────────────────────────────────────
+       SIDEBAR
+    ───────────────────────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
-      background: var(--navy-dark);
+      background: var(--navy);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
-      padding: 0;
+      height: 100vh;
     }
 
-    #sidebar-header {
-      padding: 20px 18px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+    #sidebar-top {
+      padding: 22px 16px 16px;
     }
 
     #brand {
@@ -51,243 +59,261 @@
       align-items: center;
       gap: 10px;
       text-decoration: none;
+      margin-bottom: 18px;
     }
 
-    #brand-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--red);
-      border-radius: 8px;
+    #brand-monogram {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--white);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 15px;
-      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--navy);
       flex-shrink: 0;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.3px;
     }
 
-    #brand-text { line-height: 1.2; }
-    #brand-text .name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--white);
-      letter-spacing: 0.2px;
+    #brand-text {
+      line-height: 1.25;
     }
-    #brand-text .sub {
+    #brand-text .b-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+    }
+    #brand-text .b-sub {
       font-size: 10px;
+      font-weight: 500;
       color: rgba(255,255,255,0.45);
-      font-weight: 400;
-      letter-spacing: 0.3px;
       text-transform: uppercase;
+      letter-spacing: 0.6px;
     }
 
     #new-chat-btn {
-      margin: 14px 18px 0;
-      width: calc(100% - 36px);
+      width: 100%;
       background: var(--red);
       color: var(--white);
       border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 600;
+      font-family: inherit;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 7px;
       transition: background 0.15s;
+      letter-spacing: 0.1px;
     }
     #new-chat-btn:hover { background: var(--red-hover); }
-    #new-chat-btn svg { flex-shrink: 0; }
 
     #chat-history {
       flex: 1;
       overflow-y: auto;
-      padding: 10px 10px;
+      padding: 8px 10px;
     }
-    #chat-history::-webkit-scrollbar { width: 4px; }
-    #chat-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+    #chat-history::-webkit-scrollbar { width: 3px; }
+    #chat-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-    .history-label {
+    .history-section-label {
       font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: rgba(255,255,255,0.3);
-      padding: 6px 8px 4px;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: rgba(255,255,255,0.28);
+      padding: 8px 8px 4px;
     }
 
     .history-item {
       padding: 8px 10px;
-      border-radius: 7px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 13px;
-      color: rgba(255,255,255,0.72);
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.65);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: background 0.12s, color 0.12s;
+      transition: background 0.15s, color 0.15s;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
     }
-    .history-item:hover { background: rgba(255,255,255,0.08); color: white; }
-    .history-item.active { background: rgba(255,255,255,0.12); color: white; }
-    .history-item svg { flex-shrink: 0; opacity: 0.55; }
+    .history-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+    .history-item.active { background: rgba(255,255,255,0.11); color: var(--white); }
+    .history-item .h-icon { flex-shrink: 0; opacity: 0.5; }
 
     #sidebar-footer {
-      padding: 14px 18px;
-      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255,255,255,0.07);
       font-size: 11px;
-      color: rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.28);
       text-align: center;
+      letter-spacing: 0.1px;
     }
 
-    /* ── MAIN AREA ── */
+    /* ─────────────────────────────────────────
+       MAIN AREA
+    ───────────────────────────────────────── */
     #main {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-width: 0;
+      height: 100vh;
+      background: var(--white);
     }
 
-    /* ── TOP BAR ── */
+    /* TOP NAV */
     #topbar {
-      background: var(--navy);
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      height: 56px;
       padding: 0 28px;
-      height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.18);
     }
 
     #topbar-title {
-      color: white;
       font-size: 15px;
       font-weight: 600;
-      letter-spacing: 0.1px;
+      color: var(--text);
     }
 
     #model-badge {
-      background: rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.8);
-      font-size: 11px;
-      padding: 3px 10px;
-      border-radius: 20px;
+      background: var(--bg);
+      color: var(--text-muted);
+      font-size: 11.5px;
       font-weight: 500;
-      letter-spacing: 0.2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      letter-spacing: 0.1px;
     }
 
-    /* ── MESSAGES ── */
+    /* MESSAGES */
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 28px 0;
+      padding: 24px 0 8px;
+      background: var(--white);
     }
-    #messages::-webkit-scrollbar { width: 6px; }
-    #messages::-webkit-scrollbar-thumb { background: var(--gray-mid); border-radius: 6px; }
+    #messages::-webkit-scrollbar { width: 5px; }
+    #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
 
     .msg-row {
       display: flex;
-      padding: 6px 28px;
-      max-width: 860px;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 6px 32px;
+      max-width: 752px;
       margin: 0 auto;
       width: 100%;
-      gap: 12px;
     }
     .msg-row.user { flex-direction: row-reverse; }
 
     .avatar {
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       flex-shrink: 0;
-      margin-top: 2px;
+      margin-top: 1px;
+      letter-spacing: 0.2px;
     }
-    .avatar.ai { background: var(--navy); color: white; }
-    .avatar.user { background: var(--red); color: white; }
+    .avatar.ai   { background: var(--navy); color: var(--white); }
+    .avatar.user { background: var(--red);  color: var(--white); }
 
     .bubble {
-      max-width: 80%;
-      border-radius: var(--radius);
+      max-width: 82%;
+      border-radius: 18px;
       padding: 12px 16px;
       font-size: 14px;
       line-height: 1.6;
       word-break: break-word;
     }
-    .bubble.ai {
-      background: var(--white);
-      border: 1px solid var(--gray-mid);
-      color: var(--gray);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
+
     .bubble.user {
-      background: var(--navy);
-      color: white;
+      background: var(--red);
+      color: var(--white);
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    .bubble .sql-block {
-      background: #1a2744;
-      color: #a8d8ff;
-      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    .bubble.ai {
+      background: var(--white);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    /* SQL block */
+    .sql-section-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .sql-block {
+      background: #F8F9FB;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+      border-radius: 10px;
+      padding: 12px 40px 12px 14px;
+      font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
       font-size: 12.5px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      margin: 10px 0;
+      color: var(--navy);
       overflow-x: auto;
       white-space: pre;
       position: relative;
-      border-left: 3px solid var(--red);
-    }
-
-    .sql-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--navy);
-      margin-bottom: 4px;
-      opacity: 0.6;
+      margin: 4px 0 12px;
     }
 
     .copy-btn {
       position: absolute;
       top: 8px;
       right: 8px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: rgba(255,255,255,0.6);
-      border-radius: 5px;
-      padding: 3px 8px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 2px 8px;
       font-size: 10px;
+      font-family: inherit;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: border-color 0.15s, color 0.15s;
     }
-    .copy-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+    .copy-btn:hover { border-color: var(--navy); color: var(--navy); }
 
-    .result-label {
-      font-size: 10px;
-      font-weight: 700;
+    /* Results */
+    .results-section-label {
+      font-size: 10.5px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--navy);
-      margin: 10px 0 6px;
-      opacity: 0.6;
+      letter-spacing: 0.7px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
     }
 
     .result-table-wrap {
       overflow-x: auto;
-      border-radius: 8px;
-      border: 1px solid var(--gray-mid);
+      border: 1px solid var(--border);
+      border-radius: 10px;
     }
 
     .result-table {
@@ -296,190 +322,216 @@
       font-size: 13px;
     }
     .result-table th {
-      background: var(--navy);
-      color: white;
-      padding: 8px 12px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 8px 14px;
       text-align: left;
       font-weight: 600;
       font-size: 11.5px;
-      letter-spacing: 0.2px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: 0.1px;
     }
     .result-table td {
-      padding: 7px 12px;
-      border-bottom: 1px solid var(--gray-mid);
-      color: var(--gray);
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
     }
-    .result-table tr:last-child td { border-bottom: none; }
-    .result-table tr:hover td { background: var(--navy-light); }
-
-    .no-results {
-      font-size: 13px;
-      color: #888;
-      font-style: italic;
-      padding: 4px 0;
-    }
+    .result-table tbody tr:last-child td { border-bottom: none; }
+    .result-table tbody tr:hover td { background: #fafafa; }
 
     .row-count {
       font-size: 11.5px;
-      color: #888;
-      margin-top: 6px;
+      color: var(--text-faint);
+      margin-top: 8px;
     }
 
-    .error-bubble {
-      background: #fff5f5;
-      border: 1px solid #fcc;
-      color: #c00;
-      border-radius: 8px;
-      padding: 10px 14px;
+    .no-results {
       font-size: 13px;
+      color: var(--text-muted);
+      font-style: italic;
     }
 
-    /* ── TYPING INDICATOR ── */
+    /* Error */
+    .error-card {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      color: #B91C1C;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+    .error-card .err-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+    /* Typing indicator */
     #typing-row {
       display: none;
-      padding: 6px 28px;
-      max-width: 860px;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 6px 32px;
+      max-width: 752px;
       margin: 0 auto;
       width: 100%;
-      gap: 12px;
+    }
+
+    .typing-bubble {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      padding: 14px 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
     .typing-dots {
       display: flex;
-      gap: 4px;
+      gap: 5px;
       align-items: center;
-      height: 30px;
-      padding: 0 14px;
     }
     .typing-dots span {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: var(--navy);
-      opacity: 0.3;
-      animation: bounce 1.2s infinite;
+      background: var(--text-muted);
+      opacity: 0.4;
+      animation: pulse 1.2s infinite;
     }
     .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
     .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
-    @keyframes bounce {
-      0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
-      40%            { transform: translateY(-6px); opacity: 1; }
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(1);    opacity: 0.4; }
+      40%            { transform: scale(1.25); opacity: 1; }
     }
 
-    /* ── WELCOME SCREEN ── */
+    /* ─────────────────────────────────────────
+       WELCOME / EMPTY STATE
+    ───────────────────────────────────────── */
     #welcome {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100%;
+      padding: 48px 28px;
       text-align: center;
-      padding: 40px 28px;
-      color: #666;
     }
 
-    #welcome-icon {
-      width: 72px;
-      height: 72px;
+    #welcome-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
       background: var(--navy);
-      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
       margin-bottom: 20px;
+      letter-spacing: -0.5px;
+      box-shadow: 0 4px 12px rgba(26,42,74,0.2);
     }
 
     #welcome h2 {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
-      color: var(--navy);
+      color: var(--text);
       margin-bottom: 8px;
     }
 
     #welcome p {
       font-size: 14.5px;
-      color: #777;
-      max-width: 400px;
-      line-height: 1.6;
-      margin-bottom: 28px;
+      color: var(--text-muted);
+      max-width: 380px;
+      line-height: 1.65;
+      margin-bottom: 32px;
     }
 
     .suggestion-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      max-width: 480px;
+      max-width: 500px;
       width: 100%;
     }
 
     .suggestion-card {
-      background: white;
-      border: 1px solid var(--gray-mid);
-      border-radius: 10px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 14px 16px;
       cursor: pointer;
       text-align: left;
       font-size: 13px;
-      color: #555;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      line-height: 1.4;
+      color: var(--text-muted);
+      transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
+      line-height: 1.45;
+      font-family: inherit;
     }
     .suggestion-card:hover {
       border-color: var(--navy);
-      box-shadow: 0 2px 8px rgba(0,51,102,0.12);
+      box-shadow: 0 2px 8px rgba(26,42,74,0.1);
       color: var(--navy);
     }
-    .suggestion-card .s-icon {
-      font-size: 18px;
-      margin-bottom: 6px;
+    .suggestion-card .s-emoji {
       display: block;
+      font-size: 17px;
+      margin-bottom: 6px;
     }
 
-    /* ── INPUT BAR ── */
+    /* ─────────────────────────────────────────
+       INPUT BAR
+    ───────────────────────────────────────── */
     #input-area {
-      border-top: 1px solid var(--gray-mid);
-      background: white;
-      padding: 16px 28px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--white);
+      padding: 14px 28px 18px;
       flex-shrink: 0;
     }
 
     #input-wrap {
-      max-width: 860px;
+      max-width: 688px;
       margin: 0 auto;
       display: flex;
       align-items: flex-end;
       gap: 10px;
-      background: var(--gray-light);
-      border: 1.5px solid var(--gray-mid);
-      border-radius: 14px;
-      padding: 10px 14px;
-      transition: border-color 0.15s;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 9999px;
+      padding: 8px 8px 8px 18px;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
-    #input-wrap:focus-within { border-color: var(--navy); }
+    #input-wrap:focus-within {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(26,42,74,0.06);
+    }
 
     #user-input {
       flex: 1;
       border: none;
       background: transparent;
       font-size: 14.5px;
-      color: var(--gray);
+      color: var(--text);
       resize: none;
       outline: none;
       min-height: 24px;
-      max-height: 160px;
+      max-height: 150px;
       line-height: 1.5;
       font-family: inherit;
+      padding: 4px 0;
     }
-    #user-input::placeholder { color: #aaa; }
+    #user-input::placeholder { color: var(--text-faint); }
 
     #send-btn {
-      width: 38px;
-      height: 38px;
-      background: var(--navy);
+      width: 36px;
+      height: 36px;
+      background: var(--red);
       border: none;
-      border-radius: 9px;
+      border-radius: 50%;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -487,161 +539,164 @@
       flex-shrink: 0;
       transition: background 0.15s, transform 0.1s;
     }
-    #send-btn:hover { background: var(--navy-mid); }
-    #send-btn:active { transform: scale(0.94); }
-    #send-btn:disabled { background: var(--gray-mid); cursor: not-allowed; }
+    #send-btn:hover  { background: var(--red-hover); }
+    #send-btn:active { transform: scale(0.92); }
+    #send-btn:disabled { background: var(--border); cursor: not-allowed; }
 
-    #input-footer {
-      max-width: 860px;
+    #input-hint {
+      max-width: 688px;
       margin: 8px auto 0;
       font-size: 11px;
-      color: #aaa;
+      color: var(--text-faint);
       text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <div id="sidebar">
-    <div id="sidebar-header">
-      <a id="brand" href="#">
-        <div id="brand-icon">LM</div>
+  <!-- ── SIDEBAR ── -->
+  <aside id="sidebar">
+    <div id="sidebar-top">
+      <a id="brand" href="#" onclick="return false;">
+        <div id="brand-monogram">LM</div>
         <div id="brand-text">
-          <div class="name">Lindenmeyr Munroe</div>
-          <div class="sub">DataQuery AI</div>
+          <div class="b-name">Lindenmeyr Munroe</div>
+          <div class="b-sub">DataQuery AI</div>
         </div>
       </a>
+      <button id="new-chat-btn" onclick="newChat()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        New Query Session
+      </button>
     </div>
 
-    <button id="new-chat-btn" onclick="newChat()">
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M8 2.75a.75.75 0 0 0-1.5 0V7H2.75a.75.75 0 0 0 0 1.5H6.5v4.25a.75.75 0 0 0 1.5 0V8.5h4.25a.75.75 0 0 0 0-1.5H8V2.75Z" fill="currentColor"/></svg>
-      New Query Session
-    </button>
-
     <div id="chat-history">
-      <div class="history-label">Recent</div>
+      <div class="history-section-label">Recent</div>
       <div id="history-list"></div>
     </div>
 
     <div id="sidebar-footer">
       Powered by Claude AI &nbsp;·&nbsp; Read-only SQL
     </div>
-  </div>
+  </aside>
 
-  <!-- MAIN -->
-  <div id="main">
-    <div id="topbar">
+  <!-- ── MAIN ── -->
+  <main id="main">
+    <nav id="topbar">
       <span id="topbar-title">DataQuery Assistant</span>
       <span id="model-badge">claude-sonnet-4-6</span>
-    </div>
+    </nav>
 
     <div id="messages">
       <div id="welcome">
-        <div id="welcome-icon">🗄️</div>
+        <div id="welcome-logo">LM</div>
         <h2>Ask your database anything</h2>
         <p>Type a plain-English question and I'll write the SQL, run it, and show you the results — instantly.</p>
         <div class="suggestion-grid">
-          <div class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-icon">📊</span>Show me the top 10 customers by revenue this year
-          </div>
-          <div class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-icon">📦</span>What are the most ordered products last month?
-          </div>
-          <div class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-icon">📈</span>How many orders were placed each month this year?
-          </div>
-          <div class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-icon">🔍</span>What tables are available in the database?
-          </div>
+          <button class="suggestion-card" onclick="useSuggestion(this)">
+            <span class="s-emoji">📊</span>Show me the top 10 customers by revenue this year
+          </button>
+          <button class="suggestion-card" onclick="useSuggestion(this)">
+            <span class="s-emoji">📦</span>What are the most ordered products last month?
+          </button>
+          <button class="suggestion-card" onclick="useSuggestion(this)">
+            <span class="s-emoji">📈</span>How many orders were placed each month this year?
+          </button>
+          <button class="suggestion-card" onclick="useSuggestion(this)">
+            <span class="s-emoji">🔍</span>What tables are available in the database?
+          </button>
         </div>
       </div>
     </div>
 
+    <!-- typing indicator lives outside #messages so it doesn't scroll away -->
     <div id="typing-row">
       <div class="avatar ai">LM</div>
-      <div class="typing-dots">
-        <span></span><span></span><span></span>
+      <div class="typing-bubble">
+        <div class="typing-dots"><span></span><span></span><span></span></div>
       </div>
     </div>
 
     <div id="input-area">
       <div id="input-wrap">
-        <textarea id="user-input" placeholder="Ask a question about your data…" rows="1"></textarea>
+        <textarea id="user-input" rows="1" placeholder="Ask a question about your data…"></textarea>
         <button id="send-btn" onclick="sendMessage()" title="Send">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M2 8L14 8M14 8L9 3M14 8L9 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M2 7.5h11M13 7.5L8.5 3M13 7.5L8.5 12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
-      <div id="input-footer">LM DataQuery runs read-only SELECT queries only. Data is never modified.</div>
+      <div id="input-hint">LM DataQuery runs read-only SELECT queries only. Data is never modified.</div>
     </div>
-  </div>
+  </main>
 
 <script>
   let history = [];
-  let sessions = [];
   let currentSessionId = null;
 
   const messagesEl = document.getElementById('messages');
   const welcomeEl  = document.getElementById('welcome');
   const typingRow  = document.getElementById('typing-row');
+  const mainEl     = document.getElementById('main');
   const inputEl    = document.getElementById('user-input');
   const sendBtn    = document.getElementById('send-btn');
 
-  // Auto-resize textarea
+  /* ── Auto-resize textarea ── */
   inputEl.addEventListener('input', () => {
     inputEl.style.height = 'auto';
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
   });
 
   inputEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
 
+  /* ── New chat ── */
   function newChat() {
     history = [];
     currentSessionId = null;
     messagesEl.innerHTML = '';
     messagesEl.appendChild(welcomeEl);
     welcomeEl.style.display = 'flex';
-    document.getElementById('topbar-title').textContent = 'DataQuery Assistant';
     document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
   }
 
+  /* ── Suggestion cards ── */
   function useSuggestion(el) {
-    const text = el.innerText.replace(/^[^\w]+/, '').trim();
+    const raw = el.innerText.trim();
+    const text = raw.replace(/^[\p{Emoji}\s]+/u, '').trim();
     inputEl.value = text;
     inputEl.dispatchEvent(new Event('input'));
     inputEl.focus();
   }
 
+  /* ── Sidebar history ── */
   function addToHistory(question) {
     const id = Date.now();
     currentSessionId = id;
-    sessions.unshift({ id, question });
-
     const list = document.getElementById('history-list');
     const item = document.createElement('div');
     item.className = 'history-item active';
     item.dataset.id = id;
     item.innerHTML = `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      ${escapeHtml(question.length > 32 ? question.slice(0, 32) + '…' : question)}
+      <svg class="h-icon" width="13" height="13" viewBox="0 0 24 24" fill="none">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>${escHtml(question.length > 34 ? question.slice(0, 34) + '…' : question)}</span>
     `;
     item.onclick = () => {
       document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
       item.classList.add('active');
     };
-
     document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
     list.prepend(item);
   }
 
-  function escapeHtml(str) {
+  /* ── Utilities ── */
+  function escHtml(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
@@ -649,14 +704,14 @@
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
+  /* ── Render messages ── */
   function appendUserMsg(text) {
-    if (welcomeEl.parentElement) welcomeEl.style.display = 'none';
-
+    welcomeEl.style.display = 'none';
     const row = document.createElement('div');
     row.className = 'msg-row user';
     row.innerHTML = `
       <div class="avatar user">You</div>
-      <div class="bubble user">${escapeHtml(text)}</div>
+      <div class="bubble user">${escHtml(text)}</div>
     `;
     messagesEl.appendChild(row);
     scrollToBottom();
@@ -666,20 +721,20 @@
     const row = document.createElement('div');
     row.className = 'msg-row';
 
+    /* Build results section */
     let resultsHtml = '';
     if (data.result && data.result.length > 0) {
-      const cols = data.columns || data.result[0].map((_, i) => `Column ${i + 1}`);
-      const headerCells = cols.map(c => `<th>${escapeHtml(String(c))}</th>`).join('');
-      const bodyRows = data.result.map(row =>
-        `<tr>${row.map(cell => `<td>${escapeHtml(cell === null ? 'NULL' : String(cell))}</td>`).join('')}</tr>`
+      const cols = data.columns || data.result[0].map((_, i) => `col_${i + 1}`);
+      const thead = cols.map(c => `<th>${escHtml(String(c))}</th>`).join('');
+      const tbody = data.result.map(r =>
+        `<tr>${r.map(cell => `<td>${escHtml(cell === null ? 'NULL' : String(cell))}</td>`).join('')}</tr>`
       ).join('');
-
       resultsHtml = `
-        <div class="result-label">Results</div>
+        <div class="results-section-label">Results</div>
         <div class="result-table-wrap">
           <table class="result-table">
-            <thead><tr>${headerCells}</tr></thead>
-            <tbody>${bodyRows}</tbody>
+            <thead><tr>${thead}</tr></thead>
+            <tbody>${tbody}</tbody>
           </table>
         </div>
         <div class="row-count">${data.result.length} row${data.result.length !== 1 ? 's' : ''} returned</div>
@@ -688,11 +743,12 @@
       resultsHtml = `<p class="no-results">Query returned no results.</p>`;
     }
 
+    const sqlId = `sql-${Date.now()}`;
     row.innerHTML = `
       <div class="avatar ai">LM</div>
       <div class="bubble ai">
-        <div class="sql-label">Generated SQL</div>
-        <div class="sql-block" id="sql-${Date.now()}">${escapeHtml(data.query)}<button class="copy-btn" onclick="copySQL(this)">Copy</button></div>
+        <div class="sql-section-label">Generated SQL</div>
+        <div class="sql-block" id="${sqlId}">${escHtml(data.query)}<button class="copy-btn" onclick="copySQL(this)">Copy</button></div>
         ${resultsHtml}
       </div>
     `;
@@ -706,33 +762,39 @@
     row.innerHTML = `
       <div class="avatar ai">LM</div>
       <div class="bubble ai">
-        <div class="error-bubble">⚠️ ${escapeHtml(message)}</div>
+        <div class="error-card">
+          <span class="err-icon">⚠️</span>
+          <span>${escHtml(message)}</span>
+        </div>
       </div>
     `;
     messagesEl.appendChild(row);
     scrollToBottom();
   }
 
+  /* ── Copy SQL ── */
   function copySQL(btn) {
-    const block = btn.parentElement;
-    const text = block.textContent.replace('Copy', '').trim();
-    navigator.clipboard.writeText(text).then(() => {
+    const code = btn.parentElement.textContent.replace('Copy', '').trim();
+    navigator.clipboard.writeText(code).then(() => {
       btn.textContent = 'Copied!';
       setTimeout(() => btn.textContent = 'Copy', 2000);
     });
   }
 
+  /* ── Typing indicator ── */
   function showTyping() {
-    messagesEl.appendChild(typingRow);
+    /* Insert typing row just above input area */
+    const inputArea = document.getElementById('input-area');
+    mainEl.insertBefore(typingRow, inputArea);
     typingRow.style.display = 'flex';
     scrollToBottom();
   }
 
   function hideTyping() {
     typingRow.style.display = 'none';
-    if (typingRow.parentElement) typingRow.parentElement.removeChild(typingRow);
   }
 
+  /* ── Send ── */
   async function sendMessage() {
     const question = inputEl.value.trim();
     if (!question) return;
@@ -747,12 +809,11 @@
     showTyping();
 
     try {
-      const res = await fetch('/ask', {
+      const res  = await fetch('/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, history })
+        body: JSON.stringify({ question, history }),
       });
-
       const data = await res.json();
       hideTyping();
 

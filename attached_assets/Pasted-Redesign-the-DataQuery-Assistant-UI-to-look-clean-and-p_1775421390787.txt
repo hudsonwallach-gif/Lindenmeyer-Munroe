@@ -1,0 +1,67 @@
+Redesign the DataQuery Assistant UI to look clean and professional, 
+on par with Claude.ai, ChatGPT, and Gemini. This is for Lindenmeyr 
+Munroe (a B2B paper & packaging company).
+
+## Brand Colors
+- Primary Red: #C41230
+- Dark Navy: #1A2A4A
+- Light Gray Background: #F5F5F7
+- White: #FFFFFF
+- Border/Divider: #E0E0E0
+- Text Primary: #1A1A1A
+- Text Secondary: #6B7280
+- User Bubble: #C41230 (white text)
+- AI Bubble: #FFFFFF (dark text, with subtle border)
+
+## Layout — mirror Claude.ai / ChatGPT structure:
+- LEFT SIDEBAR (260px wide, #1A2A4A background):
+  - Company logo top left: "LM" monogram in white circle + 
+    "DATAQUERY AI" in small white caps below
+  - "New Query Session" button: red (#C41230), full width, 
+    rounded, white text with + icon
+  - Recent sessions list: white text, subtle hover state
+  - Footer: "Powered by Claude AI · Read-only SQL" in muted text
+
+- MAIN CHAT AREA (white background, #FFFFFF):
+  - Top navbar: white, thin bottom border, shows 
+    "DataQuery Assistant" bold left-aligned, and 
+    "claude-sonnet-4-6" pill badge right-aligned (gray bg, 
+    dark text — subtle, not blue)
+  - Chat messages centered, max-width 720px:
+    - USER messages: right-aligned bubble, #C41230 bg, 
+      white text, rounded-2xl
+    - AI messages: left-aligned, white bg, 1px #E0E0E0 
+      border, rounded-2xl, "LM" avatar circle in navy 
+      to the left
+  - Error state: soft red background (#FEF2F2), red border, 
+    red icon — NOT a harsh red-on-dark style
+  - Empty state: centered placeholder text 
+    "Ask a question about your data..." in gray
+
+- BOTTOM INPUT BAR:
+  - Clean white bar, full width, 1px border on top
+  - Input: rounded-full, light gray bg (#F5F5F7), 
+    placeholder "Ask a question about your data..."
+  - Send button: circle, #C41230, white arrow icon
+  - Below input: small centered text 
+    "LM DataQuery runs read-only SELECT queries only. 
+    Data is never modified." in #9CA3AF
+
+## Typography
+- Font: Inter or system-ui
+- Headings: font-semibold
+- Body: font-normal, 14-15px
+- Sidebar text: 13px
+
+## General Rules
+- NO dark mode — use clean light UI
+- Generous padding and whitespace
+- Smooth hover transitions (150ms)
+- No harsh shadows — use subtle box-shadow 
+  (0 1px 3px rgba(0,0,0,0.08))
+- Rounded corners throughout (rounded-xl or rounded-2xl)
+- The overall feel should be: enterprise-clean, 
+  trustworthy, minimal
+
+Apply these styles across all existing components without 
+breaking any functionality. Keep all existing logic intact.
