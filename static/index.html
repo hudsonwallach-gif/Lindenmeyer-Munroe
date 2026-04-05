@@ -11,23 +11,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --red:         #C41230;
-      --red-hover:   #a50f28;
-      --navy:        #1A2A4A;
-      --navy-hover:  #243860;
-      --bg:          #F5F5F7;
-      --white:       #FFFFFF;
-      --border:      #E0E0E0;
-      --text:        #1A1A1A;
-      --text-muted:  #6B7280;
-      --text-faint:  #9CA3AF;
-      --sidebar-w:   260px;
+      --navy:           #1C3F6B;
+      --navy-hover:     #16335a;
+      --terra:          #B85C28;
+      --terra-hover:    #9a4d22;
+      --white:          #FFFFFF;
+      --bg:             #F5F6F8;
+      --border:         #E0E4EA;
+      --text:           #1C3F6B;
+      --text-secondary: #6B7280;
+      --text-faint:     #9CA3AF;
+      --sidebar-w:      260px;
     }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
+    html, body { height: 100%; overflow: hidden; }
 
     body {
       font-family: "Inter", system-ui, -apple-system, sans-serif;
@@ -38,9 +35,9 @@
       line-height: 1.5;
     }
 
-    /* ─────────────────────────────────────────
+    /* ─────────────────────────
        SIDEBAR
-    ───────────────────────────────────────── */
+    ───────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
       background: var(--navy);
@@ -62,6 +59,7 @@
       margin-bottom: 18px;
     }
 
+    /* White circle monogram */
     #brand-monogram {
       width: 38px;
       height: 38px;
@@ -77,9 +75,7 @@
       letter-spacing: -0.3px;
     }
 
-    #brand-text {
-      line-height: 1.25;
-    }
+    #brand-text { line-height: 1.25; }
     #brand-text .b-name {
       font-size: 13px;
       font-weight: 600;
@@ -93,9 +89,24 @@
       letter-spacing: 0.6px;
     }
 
+    /* Terracotta tree divider */
+    #sidebar-tree {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 0 14px;
+      opacity: 0.75;
+    }
+    #sidebar-tree svg { flex-shrink: 0; }
+    #sidebar-tree-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.12);
+    }
+
     #new-chat-btn {
       width: 100%;
-      background: var(--red);
+      background: var(--terra);
       color: var(--white);
       border: none;
       padding: 10px 14px;
@@ -111,7 +122,7 @@
       transition: background 0.15s;
       letter-spacing: 0.1px;
     }
-    #new-chat-btn:hover { background: var(--red-hover); }
+    #new-chat-btn:hover { background: var(--terra-hover); }
 
     #chat-history {
       flex: 1;
@@ -119,7 +130,10 @@
       padding: 8px 10px;
     }
     #chat-history::-webkit-scrollbar { width: 3px; }
-    #chat-history::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    #chat-history::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
 
     .history-section-label {
       font-size: 10px;
@@ -144,29 +158,29 @@
       align-items: center;
       gap: 7px;
     }
-    .history-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
-    .history-item.active { background: rgba(255,255,255,0.11); color: var(--white); }
+    .history-item:hover  { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+    .history-item.active { background: rgba(184,92,40,0.25); color: var(--white); border-left: 2px solid var(--terra); padding-left: 8px; }
     .history-item .h-icon { flex-shrink: 0; opacity: 0.5; }
 
     #sidebar-footer {
       padding: 14px 16px;
-      border-top: 1px solid rgba(255,255,255,0.07);
+      border-top: 1px solid rgba(255,255,255,0.08);
       font-size: 11px;
       color: rgba(255,255,255,0.28);
       text-align: center;
       letter-spacing: 0.1px;
     }
 
-    /* ─────────────────────────────────────────
+    /* ─────────────────────────
        MAIN AREA
-    ───────────────────────────────────────── */
+    ───────────────────────── */
     #main {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-width: 0;
       height: 100vh;
-      background: var(--white);
+      background: var(--bg);
     }
 
     /* TOP NAV */
@@ -189,7 +203,7 @@
 
     #model-badge {
       background: var(--bg);
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-size: 11.5px;
       font-weight: 500;
       padding: 4px 12px;
@@ -203,7 +217,7 @@
       flex: 1;
       overflow-y: auto;
       padding: 24px 0 8px;
-      background: var(--white);
+      background: var(--bg);
     }
     #messages::-webkit-scrollbar { width: 5px; }
     #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
@@ -233,7 +247,7 @@
       letter-spacing: 0.2px;
     }
     .avatar.ai   { background: var(--navy); color: var(--white); }
-    .avatar.user { background: var(--red);  color: var(--white); }
+    .avatar.user { background: var(--navy); color: var(--white); }
 
     .bubble {
       max-width: 82%;
@@ -245,7 +259,7 @@
     }
 
     .bubble.user {
-      background: var(--red);
+      background: var(--navy);
       color: var(--white);
       border-bottom-right-radius: 4px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -265,14 +279,14 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.7px;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       margin-bottom: 6px;
     }
 
     .sql-block {
-      background: #F8F9FB;
+      background: #F0F3F8;
       border: 1px solid var(--border);
-      border-left: 3px solid var(--red);
+      border-left: 3px solid var(--terra);
       border-radius: 10px;
       padding: 12px 40px 12px 14px;
       font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
@@ -290,7 +304,7 @@
       right: 8px;
       background: var(--white);
       border: 1px solid var(--border);
-      color: var(--text-muted);
+      color: var(--text-secondary);
       border-radius: 6px;
       padding: 2px 8px;
       font-size: 10px;
@@ -298,7 +312,7 @@
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s;
     }
-    .copy-btn:hover { border-color: var(--navy); color: var(--navy); }
+    .copy-btn:hover { border-color: var(--terra); color: var(--terra); }
 
     /* Results */
     .results-section-label {
@@ -306,7 +320,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.7px;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       margin-bottom: 6px;
     }
 
@@ -322,22 +336,22 @@
       font-size: 13px;
     }
     .result-table th {
-      background: var(--bg);
-      color: var(--text);
+      background: var(--navy);
+      color: var(--white);
       padding: 8px 14px;
       text-align: left;
       font-weight: 600;
       font-size: 11.5px;
-      border-bottom: 1px solid var(--border);
       letter-spacing: 0.1px;
     }
     .result-table td {
       padding: 8px 14px;
       border-bottom: 1px solid var(--border);
       color: var(--text);
+      background: var(--white);
     }
     .result-table tbody tr:last-child td { border-bottom: none; }
-    .result-table tbody tr:hover td { background: #fafafa; }
+    .result-table tbody tr:hover td { background: #EFF3F8; }
 
     .row-count {
       font-size: 11.5px;
@@ -347,18 +361,18 @@
 
     .no-results {
       font-size: 13px;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-style: italic;
     }
 
     /* Error */
     .error-card {
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
+      background: #FEF3EE;
+      border: 1px solid #F0C4A8;
       border-radius: 10px;
       padding: 12px 14px;
       font-size: 13.5px;
-      color: #B91C1C;
+      color: var(--terra-hover);
       display: flex;
       align-items: flex-start;
       gap: 8px;
@@ -395,7 +409,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--text-muted);
+      background: var(--text-secondary);
       opacity: 0.4;
       animation: pulse 1.2s infinite;
     }
@@ -407,9 +421,9 @@
       40%            { transform: scale(1.25); opacity: 1; }
     }
 
-    /* ─────────────────────────────────────────
+    /* ─────────────────────────
        WELCOME / EMPTY STATE
-    ───────────────────────────────────────── */
+    ───────────────────────── */
     #welcome {
       display: flex;
       flex-direction: column;
@@ -433,7 +447,7 @@
       color: var(--white);
       margin-bottom: 20px;
       letter-spacing: -0.5px;
-      box-shadow: 0 4px 12px rgba(26,42,74,0.2);
+      box-shadow: 0 4px 14px rgba(28,63,107,0.22);
     }
 
     #welcome h2 {
@@ -445,7 +459,7 @@
 
     #welcome p {
       font-size: 14.5px;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       max-width: 380px;
       line-height: 1.65;
       margin-bottom: 32px;
@@ -467,15 +481,15 @@
       cursor: pointer;
       text-align: left;
       font-size: 13px;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
       line-height: 1.45;
       font-family: inherit;
     }
     .suggestion-card:hover {
-      border-color: var(--navy);
-      box-shadow: 0 2px 8px rgba(26,42,74,0.1);
-      color: var(--navy);
+      border-color: var(--terra);
+      box-shadow: 0 2px 8px rgba(184,92,40,0.1);
+      color: var(--terra);
     }
     .suggestion-card .s-emoji {
       display: block;
@@ -483,9 +497,9 @@
       margin-bottom: 6px;
     }
 
-    /* ─────────────────────────────────────────
+    /* ─────────────────────────
        INPUT BAR
-    ───────────────────────────────────────── */
+    ───────────────────────── */
     #input-area {
       border-top: 1px solid var(--border);
       background: var(--white);
@@ -507,7 +521,7 @@
     }
     #input-wrap:focus-within {
       border-color: var(--navy);
-      box-shadow: 0 0 0 3px rgba(26,42,74,0.06);
+      box-shadow: 0 0 0 3px rgba(28,63,107,0.07);
     }
 
     #user-input {
@@ -529,7 +543,7 @@
     #send-btn {
       width: 36px;
       height: 36px;
-      background: var(--red);
+      background: var(--terra);
       border: none;
       border-radius: 50%;
       cursor: pointer;
@@ -539,7 +553,7 @@
       flex-shrink: 0;
       transition: background 0.15s, transform 0.1s;
     }
-    #send-btn:hover  { background: var(--red-hover); }
+    #send-btn:hover  { background: var(--terra-hover); }
     #send-btn:active { transform: scale(0.92); }
     #send-btn:disabled { background: var(--border); cursor: not-allowed; }
 
@@ -564,6 +578,16 @@
           <div class="b-sub">DataQuery AI</div>
         </div>
       </a>
+
+      <!-- Terracotta tree mark + divider -->
+      <div id="sidebar-tree">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L7 9h3l-3 5h4l-3 6h8l-3-6h4l-3-5h3L12 2z" fill="#B85C28"/>
+          <rect x="11" y="22" width="2" height="2" rx="1" fill="#B85C28"/>
+        </svg>
+        <div id="sidebar-tree-line"></div>
+      </div>
+
       <button id="new-chat-btn" onclick="newChat()">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -611,7 +635,6 @@
       </div>
     </div>
 
-    <!-- typing indicator lives outside #messages so it doesn't scroll away -->
     <div id="typing-row">
       <div class="avatar ai">LM</div>
       <div class="typing-bubble">
@@ -643,7 +666,6 @@
   const inputEl    = document.getElementById('user-input');
   const sendBtn    = document.getElementById('send-btn');
 
-  /* ── Auto-resize textarea ── */
   inputEl.addEventListener('input', () => {
     inputEl.style.height = 'auto';
     inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + 'px';
@@ -653,7 +675,6 @@
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
 
-  /* ── New chat ── */
   function newChat() {
     history = [];
     currentSessionId = null;
@@ -663,24 +684,22 @@
     document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
   }
 
-  /* ── Suggestion cards ── */
   function useSuggestion(el) {
-    const raw = el.innerText.trim();
+    const raw  = el.innerText.trim();
     const text = raw.replace(/^[\p{Emoji}\s]+/u, '').trim();
     inputEl.value = text;
     inputEl.dispatchEvent(new Event('input'));
     inputEl.focus();
   }
 
-  /* ── Sidebar history ── */
   function addToHistory(question) {
-    const id = Date.now();
+    const id   = Date.now();
     currentSessionId = id;
     const list = document.getElementById('history-list');
     const item = document.createElement('div');
-    item.className = 'history-item active';
+    item.className  = 'history-item active';
     item.dataset.id = id;
-    item.innerHTML = `
+    item.innerHTML  = `
       <svg class="h-icon" width="13" height="13" viewBox="0 0 24 24" fill="none">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -695,16 +714,12 @@
     list.prepend(item);
   }
 
-  /* ── Utilities ── */
   function escHtml(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function scrollToBottom() {
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
+  function scrollToBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
 
-  /* ── Render messages ── */
   function appendUserMsg(text) {
     welcomeEl.style.display = 'none';
     const row = document.createElement('div');
@@ -721,10 +736,9 @@
     const row = document.createElement('div');
     row.className = 'msg-row';
 
-    /* Build results section */
     let resultsHtml = '';
     if (data.result && data.result.length > 0) {
-      const cols = data.columns || data.result[0].map((_, i) => `col_${i + 1}`);
+      const cols  = data.columns || data.result[0].map((_, i) => `col_${i + 1}`);
       const thead = cols.map(c => `<th>${escHtml(String(c))}</th>`).join('');
       const tbody = data.result.map(r =>
         `<tr>${r.map(cell => `<td>${escHtml(cell === null ? 'NULL' : String(cell))}</td>`).join('')}</tr>`
@@ -772,7 +786,6 @@
     scrollToBottom();
   }
 
-  /* ── Copy SQL ── */
   function copySQL(btn) {
     const code = btn.parentElement.textContent.replace('Copy', '').trim();
     navigator.clipboard.writeText(code).then(() => {
@@ -781,20 +794,15 @@
     });
   }
 
-  /* ── Typing indicator ── */
   function showTyping() {
-    /* Insert typing row just above input area */
     const inputArea = document.getElementById('input-area');
     mainEl.insertBefore(typingRow, inputArea);
     typingRow.style.display = 'flex';
     scrollToBottom();
   }
 
-  function hideTyping() {
-    typingRow.style.display = 'none';
-  }
+  function hideTyping() { typingRow.style.display = 'none'; }
 
-  /* ── Send ── */
   async function sendMessage() {
     const question = inputEl.value.trim();
     if (!question) return;
