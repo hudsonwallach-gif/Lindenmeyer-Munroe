@@ -43,6 +43,7 @@ class AskRequest(BaseModel):
 
 class AskResponse(BaseModel):
     query: str
+    columns: list[str]
     result: list
     history: list[MessageEntry]
 
@@ -97,15 +98,16 @@ def get_schema() -> str:
     return "\n".join(schema_lines)
 
 
-def run_select_query(sql: str) -> list:
-    """Execute a validated SELECT query and return rows as a list of lists."""
+def run_select_query(sql: str) -> tuple:
+    """Execute a validated SELECT query and return (columns, rows)."""
     conn = get_connection()
     try:
         cur = conn.cursor()
         cur.execute(sql)
+        columns = [desc[0] for desc in cur.description] if cur.description else []
         result = cur.fetchall()
         cur.close()
-        return [list(row) for row in result]
+        return columns, [list(row) for row in result]
     finally:
         conn.close()
 
@@ -221,11 +223,11 @@ def ask(body: AskRequest):
 
     # 7. Execute
     try:
-        result = run_select_query(sql_query)
+        columns, result = run_select_query(sql_query)
     except Exception as e:
         raise HTTPException(
             status_code=400,
             detail={"error": str(e), "query": sql_query, "history": [h.model_dump() for h in updated_history]},
         )
 
-    return AskResponse(query=sql_query, result=result, history=updated_history)
+    return AskResponse(query=sql_query, columns=columns, result=result, history=updated_history)

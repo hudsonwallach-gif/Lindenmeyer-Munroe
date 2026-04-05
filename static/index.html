@@ -253,7 +253,6 @@
     .avatar.user { background: var(--navy); color: var(--white); }
 
     .bubble {
-      max-width: 82%;
       border-radius: 18px;
       padding: 12px 16px;
       font-size: 14px;
@@ -361,6 +360,32 @@
       color: var(--text-faint);
       margin-top: 8px;
     }
+
+    /* Status badges in result tables */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .status-pending    { background: #EDE9E4; color: #5A5550; }
+    .status-in_transit { background: #FDF0E8; color: #C4622D; border: 1px solid #F0C4A8; }
+    .status-delivered  { background: #E6F4EA; color: #1E7A35; border: 1px solid #A8D5B0; }
+    .status-on_hold    { background: #FEE8E8; color: #B91C1C; border: 1px solid #F0AAAA; }
+    .status-cancelled  { background: #F0EDE8; color: #7A7570; }
+
+    /* Message timestamp */
+    .msg-timestamp {
+      font-size: 10.5px;
+      color: var(--text-faint);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+    .msg-row.user .msg-timestamp { text-align: right; }
+    .msg-col { display: flex; flex-direction: column; max-width: 82%; }
 
     .no-results {
       font-size: 13px;
@@ -624,16 +649,16 @@
         <p>Query orders, inventory, customers, and shipments using plain English. The LM Intelligent Agent writes the SQL and returns live results instantly.</p>
         <div class="suggestion-grid">
           <button class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-emoji">📦</span>Show open orders pending shipment this week
+            <span class="s-emoji">📦</span>Show all open orders pending shipment
           </button>
           <button class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-emoji">📋</span>What are current stock levels for wide-format products?
+            <span class="s-emoji">📋</span>What are the current stock levels for wide-format products at each warehouse?
           </button>
           <button class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-emoji">📊</span>Top 10 customers by revenue this quarter
+            <span class="s-emoji">📊</span>Show top 10 customers by year-to-date revenue
           </button>
           <button class="suggestion-card" onclick="useSuggestion(this)">
-            <span class="s-emoji">🔍</span>What tables are available in the database?
+            <span class="s-emoji">🚚</span>Which orders are currently in transit and when do they deliver?
           </button>
         </div>
       </div>
@@ -655,7 +680,7 @@
           </svg>
         </button>
       </div>
-      <div id="input-hint">LM DataQuery runs read-only SELECT queries only. Data is never modified.</div>
+      <div id="input-hint">Read-only · Data is never modified &nbsp;·&nbsp; Shift+Enter for new line</div>
     </div>
   </main>
 
@@ -724,13 +749,32 @@
 
   function scrollToBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
 
+  function fmtTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  const STATUS_VALUES = new Set(['PENDING','IN_TRANSIT','DELIVERED','ON_HOLD','CANCELLED']);
+
+  function renderCell(col, cell) {
+    if (cell === null) return '<span style="color:var(--text-faint)">—</span>';
+    const val = String(cell);
+    if (STATUS_VALUES.has(val.toUpperCase())) {
+      const key = val.toUpperCase().replace(' ', '_');
+      return `<span class="status-badge status-${key.toLowerCase()}">${val.replace('_',' ')}</span>`;
+    }
+    return escHtml(val);
+  }
+
   function appendUserMsg(text) {
     welcomeEl.style.display = 'none';
     const row = document.createElement('div');
     row.className = 'msg-row user';
     row.innerHTML = `
       <div class="avatar user">You</div>
-      <div class="bubble user">${escHtml(text)}</div>
+      <div class="msg-col">
+        <div class="bubble user">${escHtml(text)}</div>
+        <div class="msg-timestamp">${fmtTime()}</div>
+      </div>
     `;
     messagesEl.appendChild(row);
     scrollToBottom();
@@ -742,10 +786,12 @@
 
     let resultsHtml = '';
     if (data.result && data.result.length > 0) {
-      const cols  = data.columns || data.result[0].map((_, i) => `col_${i + 1}`);
+      const cols  = (data.columns && data.columns.length > 0)
+        ? data.columns
+        : data.result[0].map((_, i) => `col_${i + 1}`);
       const thead = cols.map(c => `<th>${escHtml(String(c))}</th>`).join('');
       const tbody = data.result.map(r =>
-        `<tr>${r.map(cell => `<td>${escHtml(cell === null ? 'NULL' : String(cell))}</td>`).join('')}</tr>`
+        `<tr>${r.map((cell, i) => `<td>${renderCell(cols[i], cell)}</td>`).join('')}</tr>`
       ).join('');
       resultsHtml = `
         <div class="results-section-label">Results</div>
@@ -764,10 +810,13 @@
     const sqlId = `sql-${Date.now()}`;
     row.innerHTML = `
       <div class="avatar ai">LM</div>
-      <div class="bubble ai">
-        <div class="sql-section-label">Generated SQL</div>
-        <div class="sql-block" id="${sqlId}">${escHtml(data.query)}<button class="copy-btn" onclick="copySQL(this)">Copy</button></div>
-        ${resultsHtml}
+      <div class="msg-col">
+        <div class="bubble ai">
+          <div class="sql-section-label">Generated SQL</div>
+          <div class="sql-block" id="${sqlId}">${escHtml(data.query)}<button class="copy-btn" onclick="copySQL(this)">Copy</button></div>
+          ${resultsHtml}
+        </div>
+        <div class="msg-timestamp">${fmtTime()}</div>
       </div>
     `;
     messagesEl.appendChild(row);
@@ -779,11 +828,14 @@
     row.className = 'msg-row';
     row.innerHTML = `
       <div class="avatar ai">LM</div>
-      <div class="bubble ai">
-        <div class="error-card">
-          <span class="err-icon">⚠️</span>
-          <span>${escHtml(message)}</span>
+      <div class="msg-col">
+        <div class="bubble ai">
+          <div class="error-card">
+            <span class="err-icon">⚠️</span>
+            <span>${escHtml(message)}</span>
+          </div>
         </div>
+        <div class="msg-timestamp">${fmtTime()}</div>
       </div>
     `;
     messagesEl.appendChild(row);
