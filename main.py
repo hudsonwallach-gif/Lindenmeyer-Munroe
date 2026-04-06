@@ -45,6 +45,7 @@ class AskResponse(BaseModel):
     query: str
     columns: list[str]
     result: list
+    summary: str
     history: list[MessageEntry]
 
 
@@ -152,6 +153,38 @@ Rules:
 
 
 # ---------------------------------------------------------------------------
+# Summary generation
+# ---------------------------------------------------------------------------
+
+
+def generate_summary(question: str, columns: list, rows: list) -> str:
+    """Ask Groq to interpret the results in plain English."""
+    if not rows:
+        return "The query returned no results."
+    header = ", ".join(columns)
+    preview = "\n".join(str(r) for r in rows[:15])
+    if len(rows) > 15:
+        preview += f"\n... and {len(rows) - 15} more rows"
+    try:
+        resp = client.chat.completions.create(
+            model=MODEL,
+            max_tokens=200,
+            messages=[{
+                "role": "user",
+                "content": (
+                    f"Question: {question}\n\n"
+                    f"SQL results ({len(rows)} rows):\nColumns: {header}\n{preview}\n\n"
+                    "Write a concise 1-2 sentence plain English answer using specific numbers from the data. "
+                    "Be direct and business-focused. No filler phrases."
+                ),
+            }],
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception:
+        return f"{len(rows)} row{'s' if len(rows) != 1 else ''} returned."
+
+
+# ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
 
@@ -165,6 +198,35 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok", "model": MODEL}
+
+
+@app.get("/stats")
+def stats():
+    """Return live row counts from key ERP tables for the welcome screen."""
+    queries = {
+        "orders": "SELECT COUNT(*) FROM orders",
+        "customers": "SELECT COUNT(*) FROM customers",
+        "products": "SELECT COUNT(*) FROM products",
+        "warehouses": "SELECT COUNT(*) FROM warehouses",
+        "shipments": "SELECT COUNT(*) FROM shipments",
+        "pending_orders": "SELECT COUNT(*) FROM orders WHERE status = 'PENDING'",
+        "in_transit": "SELECT COUNT(*) FROM orders WHERE status = 'IN_TRANSIT'",
+    }
+    result = {}
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        for key, sql in queries.items():
+            try:
+                cur.execute(sql)
+                result[key] = cur.fetchone()[0]
+            except Exception:
+                result[key] = "—"
+        cur.close()
+        conn.close()
+    except Exception as e:
+        return {"error": str(e)}
+    return result
 
 
 @app.post("/ask", response_model=AskResponse)
@@ -229,4 +291,5 @@ def ask(body: AskRequest):
             detail={"error": str(e), "query": sql_query, "history": [h.model_dump() for h in updated_history]},
         )
 
-    return AskResponse(query=sql_query, columns=columns, result=result, history=updated_history)
+    summary = generate_summary(body.question, columns, result)
+    return AskResponse(query=sql_query, columns=columns, result=result, summary=summary, history=updated_history)

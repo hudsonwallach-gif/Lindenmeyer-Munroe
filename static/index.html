@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -387,6 +388,105 @@
     .msg-row.user .msg-timestamp { text-align: right; }
     .msg-col { display: flex; flex-direction: column; max-width: 82%; }
 
+    /* Live stats bar on welcome screen */
+    #stats-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 18px 0 4px;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      text-align: center;
+      min-width: 90px;
+    }
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    /* AI summary text */
+    .ai-summary {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text);
+      background: #F3F7FB;
+      border-left: 3px solid var(--navy);
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+    }
+
+    /* CSV export button */
+    .export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.15s;
+    }
+    .export-btn:hover { background: var(--border); color: var(--text); }
+
+    /* Chart container */
+    .chart-wrap {
+      margin-top: 14px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 260px;
+    }
+
+    /* Follow-up chips */
+    .followup-section {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .followup-label {
+      font-size: 11px;
+      color: var(--text-faint);
+      width: 100%;
+      margin-bottom: 2px;
+    }
+    .followup-chip {
+      font-size: 12px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .followup-chip:hover {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+
     .no-results {
       font-size: 13px;
       color: var(--text-muted);
@@ -631,7 +731,7 @@
     </div>
 
     <div id="sidebar-footer">
-      Powered by Claude AI &nbsp;·&nbsp; Read-only SQL
+      Powered by Groq AI &nbsp;·&nbsp; Read-only SQL
     </div>
   </aside>
 
@@ -647,6 +747,14 @@
         <div id="welcome-logo">LM</div>
         <h2>Ask your database anything</h2>
         <p>Query orders, inventory, customers, and shipments using plain English. The LM Intelligent Agent writes the SQL and returns live results instantly.</p>
+        <div id="stats-bar">
+          <div class="stat-card"><div class="stat-num" id="s-orders">—</div><div class="stat-label">Total Orders</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-pending">—</div><div class="stat-label">Pending</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-transit">—</div><div class="stat-label">In Transit</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-customers">—</div><div class="stat-label">Customers</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-products">—</div><div class="stat-label">Products</div></div>
+          <div class="stat-card"><div class="stat-num" id="s-warehouses">—</div><div class="stat-label">Warehouses</div></div>
+        </div>
         <div class="suggestion-grid">
           <button class="suggestion-card" onclick="useSuggestion(this)">
             <span class="s-emoji">📦</span>Show all open orders pending shipment
@@ -780,32 +888,126 @@
     scrollToBottom();
   }
 
+  function isNumeric(val) {
+    return val !== null && val !== '' && !isNaN(Number(val));
+  }
+
+  function tryRenderChart(canvasId, cols, rows) {
+    if (cols.length !== 2) return false;
+    const numericRows = rows.filter(r => isNumeric(r[1]));
+    if (numericRows.length < 2) return false;
+    const labels = numericRows.map(r => String(r[0]));
+    const values = numericRows.map(r => Number(r[1]));
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return false;
+    new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: cols[1],
+          data: values,
+          backgroundColor: 'rgba(28,64,104,0.75)',
+          borderColor: '#1C4068',
+          borderRadius: 5,
+          borderWidth: 1,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font: { size: 11 } } },
+          y: { ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+    return true;
+  }
+
+  function exportCSV(cols, rows, filename) {
+    const header = cols.join(',');
+    const body = rows.map(r =>
+      r.map(cell => {
+        const v = cell === null ? '' : String(cell);
+        return v.includes(',') || v.includes('"') ? `"${v.replace(/"/g,'""')}"` : v;
+      }).join(',')
+    ).join('\n');
+    const blob = new Blob([header + '\n' + body], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  function getFollowUps(question, cols) {
+    const q = question.toLowerCase();
+    const suggestions = [];
+    if (q.includes('order') || q.includes('pending')) {
+      suggestions.push('Show the total value of these orders', 'Which sales rep has the most pending orders?');
+    }
+    if (q.includes('inventory') || q.includes('stock') || q.includes('warehouse')) {
+      suggestions.push('Which products are running low (under 10 cartons)?', 'Compare stock levels across all warehouses');
+    }
+    if (q.includes('customer') || q.includes('revenue')) {
+      suggestions.push('Show orders for the top customer', 'Which region has the highest revenue?');
+    }
+    if (q.includes('transit') || q.includes('shipment') || q.includes('deliver')) {
+      suggestions.push('Show overdue shipments', 'Which carrier handles the most shipments?');
+    }
+    if (suggestions.length === 0) {
+      suggestions.push('Show all pending orders', 'Top 5 customers by revenue', 'Low stock items across warehouses');
+    }
+    return suggestions.slice(0, 3);
+  }
+
   function appendAIMsg(data) {
     const row = document.createElement('div');
     row.className = 'msg-row';
+    const chartId = `chart-${Date.now()}`;
+    const cols = (data.columns && data.columns.length > 0)
+      ? data.columns
+      : (data.result && data.result.length > 0 ? data.result[0].map((_, i) => `col_${i + 1}`) : []);
+
+    let summaryHtml = data.summary
+      ? `<div class="ai-summary">${escHtml(data.summary)}</div>` : '';
 
     let resultsHtml = '';
+    let hasChart = false;
     if (data.result && data.result.length > 0) {
-      const cols  = (data.columns && data.columns.length > 0)
-        ? data.columns
-        : data.result[0].map((_, i) => `col_${i + 1}`);
       const thead = cols.map(c => `<th>${escHtml(String(c))}</th>`).join('');
       const tbody = data.result.map(r =>
         `<tr>${r.map((cell, i) => `<td>${renderCell(cols[i], cell)}</td>`).join('')}</tr>`
       ).join('');
+      hasChart = cols.length === 2 && data.result.filter(r => isNumeric(r[1])).length >= 2;
       resultsHtml = `
         <div class="results-section-label">Results</div>
+        ${summaryHtml}
         <div class="result-table-wrap">
           <table class="result-table">
             <thead><tr>${thead}</tr></thead>
             <tbody>${tbody}</tbody>
           </table>
         </div>
-        <div class="row-count">${data.result.length} row${data.result.length !== 1 ? 's' : ''} returned</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+          <div class="row-count">${data.result.length} row${data.result.length !== 1 ? 's' : ''} returned</div>
+          <button class="export-btn" onclick="exportCSV(${JSON.stringify(cols)}, ${JSON.stringify(data.result)}, 'lm-export.csv')">
+            ↓ Export CSV
+          </button>
+        </div>
+        ${hasChart ? `<div class="chart-wrap" style="height:220px"><canvas id="${chartId}"></canvas></div>` : ''}
       `;
     } else if (data.result) {
-      resultsHtml = `<p class="no-results">Query returned no results.</p>`;
+      resultsHtml = summaryHtml || `<p class="no-results">Query returned no results.</p>`;
     }
+
+    const followUps = getFollowUps(data._question || '', cols);
+    const followUpHtml = `
+      <div class="followup-section">
+        <div class="followup-label">Try asking:</div>
+        ${followUps.map(q => `<button class="followup-chip" onclick="useFollowUp(this)">${escHtml(q)}</button>`).join('')}
+      </div>`;
 
     const sqlId = `sql-${Date.now()}`;
     row.innerHTML = `
@@ -815,12 +1017,22 @@
           <div class="sql-section-label">Generated SQL</div>
           <div class="sql-block" id="${sqlId}">${escHtml(data.query)}<button class="copy-btn" onclick="copySQL(this)">Copy</button></div>
           ${resultsHtml}
+          ${followUpHtml}
         </div>
         <div class="msg-timestamp">${fmtTime()}</div>
       </div>
     `;
     messagesEl.appendChild(row);
+    if (hasChart) {
+      setTimeout(() => tryRenderChart(chartId, cols, data.result), 50);
+    }
     scrollToBottom();
+  }
+
+  function useFollowUp(btn) {
+    inputEl.value = btn.textContent.trim();
+    inputEl.dispatchEvent(new Event('input'));
+    inputEl.focus();
   }
 
   function appendErrorMsg(message) {
