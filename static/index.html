@@ -796,22 +796,10 @@
   function appendAIMsg(data) {
     const row    = document.createElement('div');
     row.className = 'msg-row';
-    const chartId = `chart-${Date.now()}`;
-
-    const cols = (data.columns && data.columns.length > 0)
-      ? data.columns
-      : (data.result && data.result.length > 0 ? data.result[0].map((_,i) => `col_${i+1}`) : []);
-
     const summaryHtml = data.summary
       ? `<div class="ai-summary">${escHtml(data.summary)}</div>` : '';
 
-    let resultsHtml = '';
-
-    if (data.result && data.result.length > 0) {
-      resultsHtml = summaryHtml || `<p class="no-results">Query returned no results.</p>`;
-    } else if (data.result) {
-      resultsHtml = summaryHtml || `<p class="no-results">Query returned no results.</p>`;
-    }
+    const resultsHtml = summaryHtml || `<p class="no-results">Query returned no results.</p>`;
 
     const followUps   = getFollowUps(data._question || '');
     const followUpHtml = `
@@ -831,7 +819,6 @@
       </div>`;
 
     messagesEl.appendChild(row);
-    if (hasChart) setTimeout(() => tryRenderChart(chartId, cols, data.result), 50);
     scrollToBottom();
   }
 
