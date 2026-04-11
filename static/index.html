@@ -273,27 +273,11 @@
     .msg-timestamp { font-size:10px; color:rgba(255,255,255,0.2); margin-top:4px; padding:0 4px; }
     .msg-row.user .msg-timestamp { text-align:right; }
 
-    /* SQL block */
-    .sql-section-label, .results-section-label {
+    /* Results label */
+    .results-section-label {
       font-size:10px; font-weight:600; text-transform:uppercase;
       letter-spacing:0.7px; color:rgba(255,255,255,0.35); margin-bottom:6px;
     }
-    .sql-block {
-      background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08);
-      border-left:3px solid #C4622D; border-radius:10px;
-      padding:12px 40px 12px 14px; position:relative;
-      font-family:"SF Mono","Fira Code",ui-monospace,monospace;
-      font-size:12px; line-height:1.7; color:#93C5FD;
-      overflow-x:auto; white-space:pre; margin-bottom:14px;
-    }
-    .copy-btn {
-      position:absolute; top:8px; right:8px;
-      background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
-      color:rgba(255,255,255,0.5); border-radius:6px; padding:2px 8px;
-      font-size:10px; font-family:inherit; cursor:pointer;
-      transition:all 0.15s;
-    }
-    .copy-btn:hover { border-color:#C4622D; color:#E8855A; background:rgba(196,98,45,0.1); }
 
     /* AI summary */
     .ai-summary {
@@ -862,8 +846,6 @@
       <div class="avatar ai">LM</div>
       <div class="msg-col">
         <div class="bubble ai">
-          <div class="sql-section-label">Generated SQL</div>
-          <div class="sql-block">${escHtml(data.query)}<button class="copy-btn" onclick="copySQL(this)">Copy</button></div>
           ${resultsHtml}
           ${followUpHtml}
         </div>
@@ -897,14 +879,6 @@
     inputEl.value = btn.textContent.trim();
     inputEl.dispatchEvent(new Event('input'));
     inputEl.focus();
-  }
-
-  function copySQL(btn) {
-    const code = btn.parentElement.textContent.replace('Copy','').trim();
-    navigator.clipboard.writeText(code).then(() => {
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Copy', 2000);
-    });
   }
 
   // ── Typing indicator ──
