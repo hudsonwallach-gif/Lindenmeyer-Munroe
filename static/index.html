@@ -806,31 +806,9 @@
       ? `<div class="ai-summary">${escHtml(data.summary)}</div>` : '';
 
     let resultsHtml = '';
-    let hasChart    = false;
 
     if (data.result && data.result.length > 0) {
-      const thead = cols.map(c => `<th>${escHtml(String(c))}</th>`).join('');
-      const tbody = data.result.map(r =>
-        `<tr>${r.map((cell,i) => `<td>${renderCell(cols[i],cell)}</td>`).join('')}</tr>`
-      ).join('');
-      hasChart = cols.length === 2 && data.result.filter(r => isNumeric(r[1])).length >= 2;
-
-      resultsHtml = `
-        <div class="results-section-label">Results</div>
-        ${summaryHtml}
-        <div class="result-table-wrap">
-          <table class="result-table">
-            <thead><tr>${thead}</tr></thead>
-            <tbody>${tbody}</tbody>
-          </table>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:8px">
-          <div class="row-count">${data.result.length} row${data.result.length !== 1 ? 's' : ''} returned</div>
-          <button class="export-btn" onclick="exportCSV(${JSON.stringify(cols)},${JSON.stringify(data.result)},'lm-export.csv')">
-            ↓ Export CSV
-          </button>
-        </div>
-        ${hasChart ? `<div class="chart-wrap" style="height:220px"><canvas id="${chartId}"></canvas></div>` : ''}`;
+      resultsHtml = summaryHtml || `<p class="no-results">Query returned no results.</p>`;
     } else if (data.result) {
       resultsHtml = summaryHtml || `<p class="no-results">Query returned no results.</p>`;
     }
